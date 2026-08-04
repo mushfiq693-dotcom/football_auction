@@ -7,7 +7,7 @@ export class AuthController {
       const result = await AuthService.register(req.body);
       res.status(201).json({
         success: true,
-        message: 'User registered successfully',
+        message: result.message || 'User registered successfully',
         data: result,
       });
     } catch (error) {
@@ -34,6 +34,33 @@ export class AuthController {
       res.status(200).json({
         success: true,
         data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getPendingAdmins(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const pendingAdmins = await AuthService.getPendingAdmins();
+      res.status(200).json({
+        success: true,
+        data: pendingAdmins,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async verifyAdmin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.params.userId as string;
+      const { approved } = req.body;
+      const result = await AuthService.verifyAdmin(userId, approved);
+      res.status(200).json({
+        success: true,
+        message: `Admin registration ${approved ? 'approved' : 'rejected'} successfully`,
+        data: result,
       });
     } catch (error) {
       next(error);

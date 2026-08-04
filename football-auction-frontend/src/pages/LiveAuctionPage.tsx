@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSocket } from '../contexts/SocketContext';
 import { useAuth } from '../contexts/AuthContext';
-import { AuctionBid, AuctionSession } from '../types';
+import type { AuctionBid, AuctionSession } from '../types';
 import confetti from 'canvas-confetti';
-import { Radio, Shield, DollarSign, Clock, User, ArrowUpRight, Zap, Volume2 } from 'lucide-react';
+import { Clock, User, Zap } from 'lucide-react';
 import { api } from '../services/api';
 
 export const LiveAuctionPage: React.FC = () => {
@@ -79,7 +79,7 @@ export const LiveAuctionPage: React.FC = () => {
     try {
       await api.post('/auction/bid', {
         auctionSessionId: activeSession.id,
-        teamId: user?.id, // assuming team owner ID maps to team
+        teamId: user?.teamOwner?.id || user?.id,
         amount: targetAmount,
       });
       setCustomBid('');

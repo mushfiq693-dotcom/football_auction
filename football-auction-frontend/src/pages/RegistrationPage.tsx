@@ -4,13 +4,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { api } from '../services/api';
 import { useNavigate } from 'react-router-dom';
-import { UserCheck, Shield, AlertCircle } from 'lucide-react';
+import { UserCheck, AlertCircle } from 'lucide-react';
 
 const playerRegistrationSchema = z.object({
   seasonId: z.string().min(1, 'Season ID is required'),
   position: z.enum(['GOALKEEPER', 'DEFENDER', 'MIDFIELDER', 'FORWARD']),
-  secondaryPosition: z.enum(['GOALKEEPER', 'DEFENDER', 'MIDFIELDER', 'FORWARD']).optional(),
-  jerseyNumber: z.coerce.number().min(1).max(99).optional(),
+  secondaryPosition: z.enum(['GOALKEEPER', 'DEFENDER', 'MIDFIELDER', 'FORWARD']).or(z.literal('')).optional(),
+  jerseyNumber: z.coerce.number().optional(),
 });
 
 type FormData = z.infer<typeof playerRegistrationSchema>;
@@ -20,7 +20,7 @@ export const RegistrationPage: React.FC = () => {
   const [success, setSuccess] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(playerRegistrationSchema),
   });
 

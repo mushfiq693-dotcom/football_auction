@@ -11,8 +11,12 @@ export interface User {
   email: string;
   fullName: string;
   role: Role;
+  isAdminApproved?: boolean;
   avatarUrl?: string;
   phone?: string;
+  createdAt?: string;
+  teamOwner?: Team;
+  playerProfile?: Player;
 }
 
 export interface GlobalState {

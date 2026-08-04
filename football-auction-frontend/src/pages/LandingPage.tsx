@@ -1,7 +1,7 @@
 import React from 'react';
 import { useGlobalPhase } from '../contexts/GlobalStateContext';
 import { Link } from 'react-router-dom';
-import { Shield, Zap, Radio, Trophy, Users, CheckCircle2 } from 'lucide-react';
+import { Shield, Zap, Radio, Trophy, Users } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const { activePhase } = useGlobalPhase();

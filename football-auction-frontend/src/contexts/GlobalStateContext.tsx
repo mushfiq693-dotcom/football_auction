@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { GlobalState, Phase } from '../types';
+import type { GlobalState, Phase } from '../types';
 import { api } from '../services/api';
 import { useSocket } from './SocketContext';
 

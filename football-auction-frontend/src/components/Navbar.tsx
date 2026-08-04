@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGlobalPhase } from '../contexts/GlobalStateContext';
-import { Shield, User, LogOut, Radio, Trophy, Lock } from 'lucide-react';
+import { Shield, User, LogOut, Radio, Trophy } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();

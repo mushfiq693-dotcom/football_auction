@@ -18,4 +18,5 @@ async function startServer() {
   });
 }
 
+// Start server with PgBouncer prepared statement fix
 startServer();
