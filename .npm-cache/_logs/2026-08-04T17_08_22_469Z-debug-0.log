@@ -1,0 +1,291 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@11.16.0
+2 info using node@v24.18.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/mushfiq/Desktop/football-auction2/football-auction-frontend/.npmrc
+5 silly config load:file:/Users/mushfiq/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm install tailwindcss postcss autoprefixer @types/node
+8 verbose argv "install" "--save-dev" "--cache" "/Users/mushfiq/Desktop/football-auction2/.npm-cache" "tailwindcss" "postcss" "autoprefixer" "@types/node"
+9 verbose logfile logs-max:10 dir:/Users/mushfiq/Desktop/football-auction2/.npm-cache/_logs/2026-08-04T17_08_22_469Z-
+10 verbose logfile /Users/mushfiq/Desktop/football-auction2/.npm-cache/_logs/2026-08-04T17_08_22_469Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:2348810240 maxSize:587202560 maxEntrySize:293601280
+13 silly idealTree buildDeps
+14 silly fetch manifest @types/node@^24.13.3
+15 silly packumentCache full:https://registry.npmjs.org/@types%2fnode cache-miss
+16 http cache https://registry.npmjs.org/@types%2fnode 45ms (cache hit)
+17 silly packumentCache full:https://registry.npmjs.org/@types%2fnode set size:11084776 disposed:false
+18 silly fetch manifest tailwindcss@*
+19 silly packumentCache full:https://registry.npmjs.org/tailwindcss cache-miss
+20 http fetch GET 200 https://registry.npmjs.org/tailwindcss 572ms (cache miss)
+21 silly packumentCache full:https://registry.npmjs.org/tailwindcss set size:undefined disposed:false
+22 silly fetch manifest postcss@*
+23 silly packumentCache full:https://registry.npmjs.org/postcss cache-miss
+24 http cache https://registry.npmjs.org/postcss 4ms (cache hit)
+25 silly packumentCache full:https://registry.npmjs.org/postcss set size:756623 disposed:false
+26 silly fetch manifest autoprefixer@*
+27 silly packumentCache full:https://registry.npmjs.org/autoprefixer cache-miss
+28 http fetch GET 200 https://registry.npmjs.org/autoprefixer 341ms (cache miss)
+29 silly packumentCache full:https://registry.npmjs.org/autoprefixer set size:undefined disposed:false
+30 silly placeDep ROOT @types/node@24.13.3 REPLACE for: football-auction-frontend@0.0.0 want: ^24.13.3
+31 silly placeDep ROOT autoprefixer@10.5.4 OK for: football-auction-frontend@0.0.0 want: *
+32 silly placeDep ROOT postcss@8.5.25 REPLACE for: football-auction-frontend@0.0.0 want: *
+33 silly placeDep ROOT tailwindcss@4.3.3 OK for: football-auction-frontend@0.0.0 want: *
+34 silly fetch manifest fraction.js@^5.3.4
+35 silly packumentCache full:https://registry.npmjs.org/fraction.js cache-miss
+36 silly fetch manifest browserslist@^4.28.6
+37 silly packumentCache full:https://registry.npmjs.org/browserslist cache-miss
+38 silly fetch manifest caniuse-lite@^1.0.30001806
+39 silly packumentCache full:https://registry.npmjs.org/caniuse-lite cache-miss
+40 silly fetch manifest postcss-value-parser@^4.2.0
+41 silly packumentCache full:https://registry.npmjs.org/postcss-value-parser cache-miss
+42 http fetch GET 200 https://registry.npmjs.org/browserslist 110ms (cache miss)
+43 silly packumentCache full:https://registry.npmjs.org/browserslist set size:undefined disposed:false
+44 http fetch GET 200 https://registry.npmjs.org/caniuse-lite 244ms (cache miss)
+45 silly packumentCache full:https://registry.npmjs.org/caniuse-lite set size:undefined disposed:false
+46 http fetch GET 200 https://registry.npmjs.org/fraction.js 269ms (cache miss)
+47 silly packumentCache full:https://registry.npmjs.org/fraction.js set size:undefined disposed:false
+48 http fetch GET 200 https://registry.npmjs.org/postcss-value-parser 270ms (cache miss)
+49 silly packumentCache full:https://registry.npmjs.org/postcss-value-parser set size:undefined disposed:false
+50 silly placeDep ROOT browserslist@4.28.7 OK for: autoprefixer@10.5.4 want: ^4.28.6
+51 silly placeDep ROOT caniuse-lite@1.0.30001806 OK for: autoprefixer@10.5.4 want: ^1.0.30001806
+52 silly placeDep ROOT fraction.js@5.3.4 OK for: autoprefixer@10.5.4 want: ^5.3.4
+53 silly placeDep ROOT postcss-value-parser@4.2.0 OK for: autoprefixer@10.5.4 want: ^4.2.0
+54 silly fetch manifest node-releases@^2.0.51
+55 silly packumentCache full:https://registry.npmjs.org/node-releases cache-miss
+56 silly fetch manifest electron-to-chromium@^1.5.393
+57 silly packumentCache full:https://registry.npmjs.org/electron-to-chromium cache-miss
+58 silly fetch manifest update-browserslist-db@^1.2.3
+59 silly packumentCache full:https://registry.npmjs.org/update-browserslist-db cache-miss
+60 silly fetch manifest baseline-browser-mapping@^2.10.44
+61 silly packumentCache full:https://registry.npmjs.org/baseline-browser-mapping cache-miss
+62 http fetch GET 200 https://registry.npmjs.org/node-releases 143ms (cache miss)
+63 silly packumentCache full:https://registry.npmjs.org/node-releases set size:undefined disposed:false
+64 http fetch GET 200 https://registry.npmjs.org/baseline-browser-mapping 360ms (cache miss)
+65 silly packumentCache full:https://registry.npmjs.org/baseline-browser-mapping set size:undefined disposed:false
+66 http fetch GET 200 https://registry.npmjs.org/update-browserslist-db 382ms (cache miss)
+67 silly packumentCache full:https://registry.npmjs.org/update-browserslist-db set size:undefined disposed:false
+68 http fetch GET 200 https://registry.npmjs.org/electron-to-chromium 495ms (cache miss)
+69 silly packumentCache full:https://registry.npmjs.org/electron-to-chromium set size:undefined disposed:false
+70 silly fetch manifest browserslist@>= 4.21.0
+71 silly packumentCache full:https://registry.npmjs.org/browserslist cache-miss
+72 http cache https://registry.npmjs.org/browserslist 3ms (cache hit)
+73 silly packumentCache full:https://registry.npmjs.org/browserslist set size:516369 disposed:false
+74 silly placeDep ROOT baseline-browser-mapping@2.11.12 OK for: browserslist@4.28.7 want: ^2.10.44
+75 silly placeDep ROOT electron-to-chromium@1.5.400 OK for: browserslist@4.28.7 want: ^1.5.393
+76 silly placeDep ROOT node-releases@2.0.52 OK for: browserslist@4.28.7 want: ^2.0.51
+77 silly placeDep ROOT update-browserslist-db@1.2.3 OK for: browserslist@4.28.7 want: ^1.2.3
+78 silly fetch manifest escalade@^3.2.0
+79 silly packumentCache full:https://registry.npmjs.org/escalade cache-miss
+80 http fetch GET 200 https://registry.npmjs.org/escalade 243ms (cache miss)
+81 silly packumentCache full:https://registry.npmjs.org/escalade set size:undefined disposed:false
+82 silly placeDep ROOT escalade@3.2.0 OK for: update-browserslist-db@1.2.3 want: ^3.2.0
+83 silly reify moves {}
+84 silly audit bulk request {
+84 silly audit   '@hookform/resolvers': [ '5.7.1' ],
+84 silly audit   '@oxc-project/types': [ '0.142.0' ],
+84 silly audit   '@oxlint/binding-android-arm-eabi': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-android-arm64': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-darwin-arm64': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-darwin-x64': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-freebsd-x64': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-linux-arm-gnueabihf': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-linux-arm-musleabihf': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-linux-arm64-gnu': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-linux-arm64-musl': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-linux-ppc64-gnu': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-linux-riscv64-gnu': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-linux-riscv64-musl': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-linux-s390x-gnu': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-linux-x64-gnu': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-linux-x64-musl': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-openharmony-arm64': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-win32-arm64-msvc': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-win32-ia32-msvc': [ '1.77.0' ],
+84 silly audit   '@oxlint/binding-win32-x64-msvc': [ '1.77.0' ],
+84 silly audit   '@rolldown/binding-android-arm64': [ '1.2.2' ],
+84 silly audit   '@rolldown/binding-darwin-arm64': [ '1.2.2' ],
+84 silly audit   '@rolldown/binding-darwin-x64': [ '1.2.2' ],
+84 silly audit   '@rolldown/binding-freebsd-x64': [ '1.2.2' ],
+84 silly audit   '@rolldown/binding-linux-arm-gnueabihf': [ '1.2.2' ],
+84 silly audit   '@rolldown/binding-linux-arm64-gnu': [ '1.2.2' ],
+84 silly audit   '@rolldown/binding-linux-arm64-musl': [ '1.2.2' ],
+84 silly audit   '@rolldown/binding-linux-ppc64-gnu': [ '1.2.2' ],
+84 silly audit   '@rolldown/binding-linux-s390x-gnu': [ '1.2.2' ],
+84 silly audit   '@rolldown/binding-linux-x64-gnu': [ '1.2.2' ],
+84 silly audit   '@rolldown/binding-linux-x64-musl': [ '1.2.2' ],
+84 silly audit   '@rolldown/binding-openharmony-arm64': [ '1.2.2' ],
+84 silly audit   '@rolldown/binding-win32-arm64-msvc': [ '1.2.2' ],
+84 silly audit   '@rolldown/binding-win32-x64-msvc': [ '1.2.2' ],
+84 silly audit   '@rolldown/pluginutils': [ '1.0.1' ],
+84 silly audit   '@socket.io/component-emitter': [ '3.1.2' ],
+84 silly audit   '@standard-schema/utils': [ '0.3.0' ],
+84 silly audit   '@tanstack/query-core': [ '5.101.4' ],
+84 silly audit   '@tanstack/react-query': [ '5.101.4' ],
+84 silly audit   '@types/canvas-confetti': [ '1.9.0' ],
+84 silly audit   '@types/react': [ '19.2.18' ],
+84 silly audit   '@types/react-dom': [ '19.2.4' ],
+84 silly audit   '@vitejs/plugin-react': [ '6.0.5' ],
+84 silly audit   'agent-base': [ '6.0.2' ],
+84 silly audit   asynckit: [ '0.4.0' ],
+84 silly audit   axios: [ '1.19.0' ],
+84 silly audit   'call-bind-apply-helpers': [ '1.0.2' ],
+84 silly audit   'canvas-confetti': [ '1.9.4' ],
+84 silly audit   clsx: [ '2.1.1' ],
+84 silly audit   'combined-stream': [ '1.0.8' ],
+84 silly audit   cookie: [ '1.1.1' ],
+84 silly audit   csstype: [ '3.2.3' ],
+84 silly audit   debug: [ '4.4.3' ],
+84 silly audit   'delayed-stream': [ '1.0.0' ],
+84 silly audit   'detect-libc': [ '2.1.2' ],
+84 silly audit   'dunder-proto': [ '1.0.1' ],
+84 silly audit   'engine.io-client': [ '6.6.6' ],
+84 silly audit   'engine.io-parser': [ '5.2.3' ],
+84 silly audit   'es-define-property': [ '1.0.1' ],
+84 silly audit   'es-errors': [ '1.3.0' ],
+84 silly audit   'es-object-atoms': [ '1.1.2' ],
+84 silly audit   'es-set-tostringtag': [ '2.1.0' ],
+84 silly audit   fdir: [ '6.5.0' ],
+84 silly audit   'follow-redirects': [ '1.16.0' ],
+84 silly audit   'form-data': [ '4.0.6' ],
+84 silly audit   fsevents: [ '2.3.3' ],
+84 silly audit   'function-bind': [ '1.1.2' ],
+84 silly audit   'get-intrinsic': [ '1.3.0' ],
+84 silly audit   'get-proto': [ '1.0.1' ],
+84 silly audit   gopd: [ '1.2.0' ],
+84 silly audit   'has-symbols': [ '1.1.0' ],
+84 silly audit   'has-tostringtag': [ '1.0.2' ],
+84 silly audit   hasown: [ '2.0.4' ],
+84 silly audit   'https-proxy-agent': [ '5.0.1' ],
+84 silly audit   lightningcss: [ '1.33.0' ],
+84 silly audit   'lightningcss-android-arm64': [ '1.33.0' ],
+84 silly audit   'lightningcss-darwin-arm64': [ '1.33.0' ],
+84 silly audit   'lightningcss-darwin-x64': [ '1.33.0' ],
+84 silly audit   'lightningcss-freebsd-x64': [ '1.33.0' ],
+84 silly audit   'lightningcss-linux-arm-gnueabihf': [ '1.33.0' ],
+84 silly audit   'lightningcss-linux-arm64-gnu': [ '1.33.0' ],
+84 silly audit   'lightningcss-linux-arm64-musl': [ '1.33.0' ],
+84 silly audit   'lightningcss-linux-x64-gnu': [ '1.33.0' ],
+84 silly audit   'lightningcss-linux-x64-musl': [ '1.33.0' ],
+84 silly audit   'lightningcss-win32-arm64-msvc': [ '1.33.0' ],
+84 silly audit   'lightningcss-win32-x64-msvc': [ '1.33.0' ],
+84 silly audit   'lucide-react': [ '1.28.0' ],
+84 silly audit   'math-intrinsics': [ '1.1.0' ],
+84 silly audit   'mime-db': [ '1.52.0' ],
+84 silly audit   'mime-types': [ '2.1.35' ],
+84 silly audit   ms: [ '2.1.3' ],
+84 silly audit   nanoid: [ '3.3.17' ],
+84 silly audit   oxlint: [ '1.77.0' ],
+84 silly audit   picocolors: [ '1.1.1' ],
+84 silly audit   picomatch: [ '4.0.5' ],
+84 silly audit   'proxy-from-env': [ '2.1.0' ],
+84 silly audit   react: [ '19.2.8' ],
+84 silly audit   'react-dom': [ '19.2.8' ],
+84 silly audit   'react-hook-form': [ '7.84.0' ],
+84 silly audit   'react-router': [ '7.18.2' ],
+84 silly audit   'react-router-dom': [ '7.18.2' ],
+84 silly audit   rolldown: [ '1.2.2' ],
+84 silly audit   scheduler: [ '0.27.0' ],
+84 silly audit   'set-cookie-parser': [ '2.7.2' ],
+84 silly audit   'socket.io-client': [ '4.8.3' ],
+84 silly audit   'socket.io-parser': [ '4.2.7' ],
+84 silly audit   'source-map-js': [ '1.2.1' ],
+84 silly audit   'tailwind-merge': [ '3.6.0' ],
+84 silly audit   tinyglobby: [ '0.2.17' ],
+84 silly audit   typescript: [ '6.0.3' ],
+84 silly audit   'undici-types': [ '7.18.2' ],
+84 silly audit   vite: [ '8.2.0' ],
+84 silly audit   ws: [ '8.21.2' ],
+84 silly audit   'xmlhttprequest-ssl': [ '2.1.2' ],
+84 silly audit   zod: [ '4.4.3' ],
+84 silly audit   '@types/node': [ '24.13.3' ],
+84 silly audit   autoprefixer: [ '10.5.4' ],
+84 silly audit   postcss: [ '8.5.25' ],
+84 silly audit   tailwindcss: [ '4.3.3' ],
+84 silly audit   browserslist: [ '4.28.7' ],
+84 silly audit   'caniuse-lite': [ '1.0.30001806' ],
+84 silly audit   'fraction.js': [ '5.3.4' ],
+84 silly audit   'postcss-value-parser': [ '4.2.0' ],
+84 silly audit   'baseline-browser-mapping': [ '2.11.12' ],
+84 silly audit   'electron-to-chromium': [ '1.5.400' ],
+84 silly audit   'node-releases': [ '2.0.52' ],
+84 silly audit   'update-browserslist-db': [ '1.2.3' ],
+84 silly audit   escalade: [ '3.2.0' ]
+84 silly audit }
+85 http cache escalade@https://registry.npmjs.org/escalade/-/escalade-3.2.0.tgz 1ms (cache hit)
+86 http cache electron-to-chromium@https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.5.400.tgz 0ms (cache hit)
+87 http cache baseline-browser-mapping@https://registry.npmjs.org/baseline-browser-mapping/-/baseline-browser-mapping-2.11.12.tgz 0ms (cache hit)
+88 http cache postcss-value-parser@https://registry.npmjs.org/postcss-value-parser/-/postcss-value-parser-4.2.0.tgz 0ms (cache hit)
+89 http cache fraction.js@https://registry.npmjs.org/fraction.js/-/fraction.js-5.3.4.tgz 0ms (cache hit)
+90 http cache caniuse-lite@https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001806.tgz 0ms (cache hit)
+91 http cache browserslist@https://registry.npmjs.org/browserslist/-/browserslist-4.28.7.tgz 0ms (cache hit)
+92 http cache tailwindcss@https://registry.npmjs.org/tailwindcss/-/tailwindcss-4.3.3.tgz 0ms (cache hit)
+93 http cache autoprefixer@https://registry.npmjs.org/autoprefixer/-/autoprefixer-10.5.4.tgz 0ms (cache hit)
+94 http cache node-releases@https://registry.npmjs.org/node-releases/-/node-releases-2.0.52.tgz 0ms (cache hit)
+95 http cache fsevents@https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz 0ms (cache hit)
+96 http cache update-browserslist-db@https://registry.npmjs.org/update-browserslist-db/-/update-browserslist-db-1.2.3.tgz 0ms (cache hit)
+97 silly tarball no local data for baseline-browser-mapping@https://registry.npmjs.org/baseline-browser-mapping/-/baseline-browser-mapping-2.11.12.tgz. Extracting by manifest.
+98 silly tarball no local data for escalade@https://registry.npmjs.org/escalade/-/escalade-3.2.0.tgz. Extracting by manifest.
+99 silly tarball no local data for electron-to-chromium@https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.5.400.tgz. Extracting by manifest.
+100 silly tarball no local data for postcss-value-parser@https://registry.npmjs.org/postcss-value-parser/-/postcss-value-parser-4.2.0.tgz. Extracting by manifest.
+101 silly tarball no local data for fraction.js@https://registry.npmjs.org/fraction.js/-/fraction.js-5.3.4.tgz. Extracting by manifest.
+102 silly tarball no local data for caniuse-lite@https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001806.tgz. Extracting by manifest.
+103 silly tarball no local data for browserslist@https://registry.npmjs.org/browserslist/-/browserslist-4.28.7.tgz. Extracting by manifest.
+104 silly tarball no local data for tailwindcss@https://registry.npmjs.org/tailwindcss/-/tailwindcss-4.3.3.tgz. Extracting by manifest.
+105 silly tarball no local data for autoprefixer@https://registry.npmjs.org/autoprefixer/-/autoprefixer-10.5.4.tgz. Extracting by manifest.
+106 silly tarball no local data for node-releases@https://registry.npmjs.org/node-releases/-/node-releases-2.0.52.tgz. Extracting by manifest.
+107 silly tarball no local data for update-browserslist-db@https://registry.npmjs.org/update-browserslist-db/-/update-browserslist-db-1.2.3.tgz. Extracting by manifest.
+108 http fetch GET 200 https://registry.npmjs.org/escalade/-/escalade-3.2.0.tgz 331ms (cache miss)
+109 http fetch GET 200 https://registry.npmjs.org/baseline-browser-mapping/-/baseline-browser-mapping-2.11.12.tgz 334ms (cache miss)
+110 http fetch GET 200 https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.5.400.tgz 334ms (cache miss)
+111 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 532ms
+112 silly audit report {
+112 silly audit report   'react-router': [
+112 silly audit report     {
+112 silly audit report       id: 1124282,
+112 silly audit report       url: 'https://github.com/advisories/GHSA-qwww-vcr4-c8h2',
+112 silly audit report       title: 'React Router: RSC Mode CSRF Bypass Allows Action Execution Before 400 Response',
+112 silly audit report       severity: 'high',
+112 silly audit report       vulnerable_versions: '>=7.12.0 <8.3.0',
+112 silly audit report       cwe: [Array],
+112 silly audit report       cvss: [Object]
+112 silly audit report     }
+112 silly audit report   ]
+112 silly audit report }
+113 silly packumentCache corgi:https://registry.npmjs.org/react-router cache-miss
+114 http cache https://registry.npmjs.org/react-router 6ms (cache hit)
+115 silly packumentCache corgi:https://registry.npmjs.org/react-router set size:1347653 disposed:false
+116 silly packumentCache corgi:https://registry.npmjs.org/react-router-dom cache-miss
+117 http fetch GET 200 https://registry.npmjs.org/postcss-value-parser/-/postcss-value-parser-4.2.0.tgz 548ms (cache miss)
+118 http fetch GET 200 https://registry.npmjs.org/update-browserslist-db/-/update-browserslist-db-1.2.3.tgz 553ms (cache miss)
+119 http cache https://registry.npmjs.org/react-router-dom 19ms (cache hit)
+120 silly packumentCache corgi:https://registry.npmjs.org/react-router-dom set size:1062690 disposed:false
+121 http fetch GET 200 https://registry.npmjs.org/browserslist/-/browserslist-4.28.7.tgz 592ms (cache miss)
+122 http fetch GET 200 https://registry.npmjs.org/node-releases/-/node-releases-2.0.52.tgz 592ms (cache miss)
+123 http fetch GET 200 https://registry.npmjs.org/fraction.js/-/fraction.js-5.3.4.tgz 603ms (cache miss)
+124 http fetch GET 200 https://registry.npmjs.org/autoprefixer/-/autoprefixer-10.5.4.tgz 616ms (cache miss)
+125 http fetch GET 200 https://registry.npmjs.org/tailwindcss/-/tailwindcss-4.3.3.tgz 655ms (cache miss)
+126 http fetch GET 200 https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001806.tgz 729ms (cache miss)
+127 silly ADD node_modules/escalade
+128 silly ADD node_modules/update-browserslist-db
+129 silly ADD node_modules/node-releases
+130 silly ADD node_modules/electron-to-chromium
+131 silly ADD node_modules/baseline-browser-mapping
+132 silly ADD node_modules/postcss-value-parser
+133 silly ADD node_modules/fraction.js
+134 silly ADD node_modules/caniuse-lite
+135 silly ADD node_modules/browserslist
+136 silly ADD node_modules/tailwindcss
+137 silly ADD node_modules/autoprefixer
+138 silly ADD node_modules/fsevents
+139 warn allow-scripts 1 package has install scripts not yet covered by allowScripts:
+139 warn allow-scripts   fsevents@2.3.3 (install: (install scripts present))
+139 warn allow-scripts
+139 warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+140 verbose cwd /Users/mushfiq/Desktop/football-auction2/football-auction-frontend
+141 verbose os Darwin 24.1.0
+142 verbose node v24.18.0
+143 verbose npm  v11.16.0
+144 verbose exit 0
+145 info ok

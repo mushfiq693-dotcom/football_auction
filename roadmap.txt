@@ -1,0 +1,528 @@
+You are a Staff Software Architect and Senior Full Stack Engineer.
+
+Your task is NOT to generate code immediately.
+
+Instead, first design a production-quality architecture for the following Hackathon project.
+
+=========================================================
+PROJECT
+=========================================================
+
+University Football Franchise & Tournament Platform !
+
+The platform has four global phases.
+
+Phase 1
+SETUP
+
+Phase 2
+PLAYER REGISTRATION
+
+Phase 3
+LIVE AUCTION
+
+Phase 4
+LIVE TOURNAMENT
+
+The application acts like a global state machine.
+
+Changing the phase automatically changes:
+
+• frontend pages
+• backend permissions
+• available APIs
+• websocket channels
+
+There is only ONE active phase.
+
+=========================================================
+IMPORTANT REQUIREMENTS
+=========================================================
+
+Prioritize everything in this order
+
+1. Database Design
+2. Backend Architecture
+3. Frontend Architecture
+
+Never do frontend first.
+
+=========================================================
+PROJECT STRUCTURE
+=========================================================
+
+Frontend and Backend MUST be completely separate repositories.
+
+Repository 1
+
+football-auction-backend/
+
+Repository 2
+
+football-auction-frontend/
+
+No monorepo.
+
+No Docker.
+
+No Kubernetes.
+
+No paid services.
+
+Everything must be deployable using FREE hosting only.
+
+=========================================================
+FREE STACK ONLY
+=========================================================
+
+Database
+
+Supabase PostgreSQL (FREE)
+
+Authentication
+
+Supabase Auth
+
+Realtime
+
+Socket.IO
+
+Image Storage
+
+Cloudinary Free Tier
+
+Backend Hosting
+
+Render Free
+
+Frontend Hosting
+
+Vercel Free
+
+Email
+
+Resend Free
+
+ORM
+
+Prisma
+
+=========================================================
+BACKEND STACK
+=========================================================
+
+Node.js
+
+Express
+
+TypeScript
+
+Prisma ORM
+
+PostgreSQL
+
+Socket.IO
+
+JWT
+
+Cloudinary
+
+Multer
+
+Zod Validation
+
+Redis MUST NOT be used.
+
+No Docker.
+
+=========================================================
+FRONTEND STACK
+=========================================================
+
+React
+
+Vite
+
+TypeScript
+
+TailwindCSS
+
+Shadcn UI
+
+TanStack Query
+
+React Router
+
+React Hook Form
+
+Zod
+
+Socket.IO Client
+
+=========================================================
+FIRST OUTPUT
+=========================================================
+
+Generate ONLY the architecture.
+
+Do NOT write implementation yet.
+
+=========================================================
+STEP 1
+
+Database Design
+
+=========================================================
+
+Design an enterprise-grade relational database.
+
+Include
+
+ER Diagram
+
+All Tables
+
+Primary Keys
+
+Foreign Keys
+
+Indexes
+
+Unique Constraints
+
+Cascade Rules
+
+Check Constraints
+
+Triggers (if necessary)
+
+Database Transactions
+
+Database Locks
+
+Normalization
+
+Explain why each table exists.
+
+=========================================================
+The schema must support
+
+Users
+
+there will be 3 different types of users:
+
+1. admin
+2. manager
+3. player
+
+admin will have all the permissions
+manager will have only the permissions to manage a team
+    manager will create there profile without any restrictions
+    After login, the user could create team which should be approved by the admins and the
+    person who has created the team will be the manager of that specifique team.
+    
+    
+player will have only the permissions to manage their profile
+
+they will have their own specifiqe and uniqe dashboards
+
+
+Roles
+
+Players
+
+Teams
+
+Player Categories
+
+Budget Rules
+
+Auction Sessions
+
+Auction Bids
+
+Auction Winners
+
+Team Wallet
+
+Player Positions
+
+Matches
+
+Match Legs
+
+Standings
+
+Statistics
+
+Player Performance
+
+News
+
+Media
+
+Global Settings
+
+Lifecycle States
+
+Audit Logs
+
+Notifications
+
+=========================================================
+Handle
+
+Blind Auction
+
+Normal Auction
+
+Rollback
+
+Auction Pause
+
+Auction Resume
+
+Auction Cancel
+
+Unsold Players
+
+Sold Players
+
+Multiple Seasons
+
+Soft Deletes
+
+=========================================================
+STEP 2
+
+Backend Architecture
+
+=========================================================
+
+Design
+
+Folder Structure
+
+Layered Architecture
+
+Controllers
+
+Services
+
+Repositories
+
+DTOs
+
+Validation
+
+Socket Layer
+
+Middleware
+
+Authorization
+
+Authentication
+
+File Upload
+
+Error Handling
+
+Logging
+
+Transactions
+
+Rate Limiting
+
+Global State Machine
+
+=========================================================
+Design all APIs
+
+REST endpoints
+
+WebSocket Events
+
+Admin APIs
+
+Player APIs
+
+Team APIs
+
+Tournament APIs
+
+Public APIs
+
+=========================================================
+Design
+
+Socket Rooms
+
+Auction Room
+
+Tournament Room
+
+Public Room
+
+Admin Room
+
+Team Room
+
+=========================================================
+Explain
+
+Race Condition Prevention
+
+Database Locking
+
+Serializable Transactions
+
+Optimistic Locking
+
+Pessimistic Locking
+
+=========================================================
+STEP 3
+
+Frontend Architecture
+
+=========================================================
+
+Design
+
+Folder Structure
+
+Pages
+
+Layouts
+
+Components
+
+Hooks
+
+Contexts
+
+React Query
+
+API Layer
+
+Socket Layer
+
+Protected Routes
+
+Role Guards
+
+Theme
+
+State Management
+
+=========================================================
+Pages
+
+Landing
+
+Registration
+
+Auction
+
+Tournament
+
+Dashboard
+
+Admin
+
+Podium
+
+Team
+
+Player
+
+Public
+
+=========================================================
+STEP 4
+
+Project Roadmap
+
+=========================================================
+
+Break the entire project into milestones.
+
+Milestone 1
+
+Database
+
+Milestone 2
+
+Authentication
+
+Milestone 3
+
+Registration
+
+Milestone 4
+
+Auction
+
+Milestone 5
+
+Tournament
+
+Milestone 6
+
+Statistics
+
+Milestone 7
+
+Testing
+
+Milestone 8
+
+Deployment
+
+=========================================================
+STEP 5
+
+Deployment
+
+=========================================================
+
+Use ONLY free services.
+
+Frontend
+
+Vercel
+
+Backend
+
+Render
+
+Database
+
+Supabase
+
+Image Storage
+
+Cloudinary
+
+Email
+
+Resend
+
+=========================================================
+STEP 6
+
+After architecture is approved,
+
+generate the project one module at a time.
+
+Never generate the entire project at once.
+
+Always finish one module completely before moving to the next.
+
+Database first.
+
+Then backend.
+
+Finally frontend.
+
+Follow enterprise-level coding standards throughout.
