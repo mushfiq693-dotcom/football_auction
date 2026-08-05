@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: football-auction-backend
+    runtime: node
+    rootDir: football-auction-backend
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npx prisma db push && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: postgresql://postgres.wrtvcccsisxtlbcvfyru:MuSfi0191Mu@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+      - key: DIRECT_URL
+        value: postgresql://postgres.wrtvcccsisxtlbcvfyru:MuSfi0191Mu@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres
+      - key: JWT_SECRET
+        value: super-secret-football-auction-key-2026
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CLOUDINARY_CLOUD_NAME
+        value: demo
+      - key: CLOUDINARY_API_KEY
+        value: "123456789"
+      - key: CLOUDINARY_API_SECRET
+        value: sample_secret
+      - key: RESEND_API_KEY
+        value: re_sample
