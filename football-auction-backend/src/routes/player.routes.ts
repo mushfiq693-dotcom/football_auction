@@ -11,10 +11,13 @@ const router = Router();
 
 const registerPlayerSchema = z.object({
   body: z.object({
-    seasonId: z.string().uuid(),
+    seasonId: z.string().uuid().optional().or(z.literal('')),
     position: z.nativeEnum(Position),
-    secondaryPosition: z.nativeEnum(Position).optional(),
-    jerseyNumber: z.number().int().positive().optional(),
+    secondaryPosition: z.nativeEnum(Position).optional().or(z.literal('')).nullable(),
+    jerseyNumber: z.preprocess(
+      (val) => (val === '' || val === null || val === undefined || Number.isNaN(Number(val)) ? undefined : Number(val)),
+      z.number().int().positive().optional()
+    ),
   }),
 });
 

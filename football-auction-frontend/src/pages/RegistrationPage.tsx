@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserCheck, AlertCircle } from 'lucide-react';
 
 const playerRegistrationSchema = z.object({
-  seasonId: z.string().min(1, 'Season ID is required'),
+  seasonId: z.string().optional(),
   position: z.enum(['GOALKEEPER', 'DEFENDER', 'MIDFIELDER', 'FORWARD']),
   secondaryPosition: z.enum(['GOALKEEPER', 'DEFENDER', 'MIDFIELDER', 'FORWARD']).or(z.literal('')).optional(),
   jerseyNumber: z.coerce.number().optional(),
@@ -27,7 +27,23 @@ export const RegistrationPage: React.FC = () => {
   const onSubmit = async (data: FormData) => {
     try {
       setError(null);
-      await api.post('/players/register', data);
+      const payload: any = {
+        position: data.position,
+      };
+
+      if (data.seasonId && data.seasonId.trim() !== '') {
+        payload.seasonId = data.seasonId.trim();
+      }
+
+      if (data.secondaryPosition && data.secondaryPosition !== '') {
+        payload.secondaryPosition = data.secondaryPosition;
+      }
+
+      if (data.jerseyNumber && !isNaN(Number(data.jerseyNumber)) && Number(data.jerseyNumber) > 0) {
+        payload.jerseyNumber = Number(data.jerseyNumber);
+      }
+
+      await api.post('/players/register', payload);
       setSuccess(true);
       setTimeout(() => navigate('/roster'), 2000);
     } catch (err: any) {
@@ -63,10 +79,12 @@ export const RegistrationPage: React.FC = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold uppercase text-slate-400 mb-2">Season ID</label>
+            <label className="block text-xs font-semibold uppercase text-slate-400 mb-2">
+              Season ID <span className="text-slate-500 font-normal">(Optional - defaults to Active Season)</span>
+            </label>
             <input
               {...register('seasonId')}
-              placeholder="e.g. 123e4567-e89b-12d3-a456-426614174000"
+              placeholder="Leave blank for current active season or enter UUID"
               className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-purple-500 transition-colors text-sm"
             />
             {errors.seasonId && <p className="text-xs text-red-400 mt-1">{errors.seasonId.message}</p>}

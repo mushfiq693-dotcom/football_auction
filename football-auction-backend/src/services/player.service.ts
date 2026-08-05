@@ -19,13 +19,50 @@ export class PlayerService {
       throw new AppError(400, 'Player profile already exists for this user');
     }
 
+    let targetSeasonId = dto.seasonId;
+
+    if (!targetSeasonId || targetSeasonId.trim() === '') {
+      let activeSeason = await prisma.season.findFirst({
+        where: { isActive: true },
+      });
+      if (!activeSeason) {
+        activeSeason = await prisma.season.findFirst({
+          orderBy: { createdAt: 'desc' },
+        });
+      }
+      if (!activeSeason) {
+        activeSeason = await prisma.season.create({
+          data: {
+            name: 'Season 2026',
+            year: 2026,
+            isActive: true,
+          },
+        });
+      }
+      targetSeasonId = activeSeason.id;
+    } else {
+      const seasonExists = await prisma.season.findUnique({ where: { id: targetSeasonId } });
+      if (!seasonExists) {
+        let activeSeason = await prisma.season.findFirst({ where: { isActive: true } });
+        if (!activeSeason) {
+          activeSeason = await prisma.season.create({
+            data: { id: targetSeasonId, name: 'Season 2026', year: 2026, isActive: true },
+          });
+        }
+        targetSeasonId = activeSeason.id;
+      }
+    }
+
+    const secPos = dto.secondaryPosition && dto.secondaryPosition.trim() !== '' ? dto.secondaryPosition : undefined;
+    const jNum = dto.jerseyNumber && !isNaN(Number(dto.jerseyNumber)) && Number(dto.jerseyNumber) > 0 ? Number(dto.jerseyNumber) : undefined;
+
     const player = await prisma.player.create({
       data: {
         userId,
-        seasonId: dto.seasonId,
+        seasonId: targetSeasonId,
         position: dto.position,
-        secondaryPosition: dto.secondaryPosition,
-        jerseyNumber: dto.jerseyNumber,
+        secondaryPosition: secPos,
+        jerseyNumber: jNum,
         registrationStatus: RegistrationStatus.PENDING,
       },
       include: {
