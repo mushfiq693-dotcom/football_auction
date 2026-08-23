@@ -2,12 +2,19 @@
   "name": "football-auction-root",
   "version": "1.0.0",
   "private": true,
+  "prisma": {
+    "schema": "football-auction-backend/prisma/schema.prisma"
+  },
   "scripts": {
-    "build": "cd football-auction-backend && npm install && npm run build",
-    "start": "cd football-auction-backend && npm start",
+    "build": "cd football-auction-backend && npm install && npx prisma generate && npm run build",
+    "start": "cd football-auction-backend && npx prisma db push && npm start",
     "dev:backend": "cd football-auction-backend && npm run dev",
     "dev:frontend": "cd football-auction-frontend && npm run dev",
     "build:frontend": "cd football-auction-frontend && npm install && npm run build",
     "build:backend": "cd football-auction-backend && npm install && npm run build"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.4.0",
+    "prisma": "^6.4.0"
   }
 }

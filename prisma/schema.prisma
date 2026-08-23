@@ -1,0 +1,379 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  TEAM_OWNER
+  PLAYER
+  PUBLIC_GUEST
+}
+
+enum Phase {
+  SETUP
+  PLAYER_REGISTRATION
+  LIVE_AUCTION
+  LIVE_TOURNAMENT
+}
+
+enum AuctionType {
+  NORMAL
+  BLIND
+}
+
+enum AuctionStatus {
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+  UNSOLD
+}
+
+enum RegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  HALFTIME
+  COMPLETED
+  POSTPONED
+}
+
+enum Position {
+  GOALKEEPER
+  DEFENDER
+  MIDFIELDER
+  FORWARD
+}
+
+model GlobalState {
+  id              String   @id @default(uuid())
+  activePhase     Phase    @default(SETUP)
+  currentSeasonId String?
+  isMaintenance   Boolean  @default(false)
+  updatedAt       DateTime @updatedAt
+  updatedBy       String?
+}
+
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  passwordHash    String
+  role            Role      @default(PLAYER)
+  isAdminApproved Boolean   @default(true)
+  fullName        String
+  avatarUrl       String?
+  phone           String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  playerProfile Player?
+  teamOwner     Team?
+  auditLogs     AuditLog[]
+  notifications Notification[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Season {
+  id            String   @id @default(uuid())
+  name          String   // e.g. "Season 2026"
+  year          Int
+  totalBudget   Float    @default(100000)
+  minRosterSize Int      @default(11)
+  maxRosterSize Int      @default(15)
+  isTwoLegged   Boolean  @default(false)
+  isActive      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  teams            Team[]
+  playerCategories PlayerCategory[]
+  auctionSessions  AuctionSession[]
+  tournaments      Tournament[]
+  players          Player[]
+}
+
+model PlayerCategory {
+  id                 String   @id @default(uuid())
+  seasonId           String
+  name               String   // e.g., "Category A - Elite", "Category B"
+  basePrice          Float
+  minBidIncrement    Float
+  maxPlayersPerTeam  Int      @default(15)
+
+  season  Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  players Player[]
+
+  @@index([seasonId])
+}
+
+model Player {
+  id                 String             @id @default(uuid())
+  userId             String             @unique
+  seasonId           String
+  categoryId         String?
+  studentId          String?            @unique
+  academicSession    String?            // e.g. "2021-2022"
+  jerseyName         String?
+  photoUrl           String?
+  photoPublicId      String?            // Cloudinary Public ID for asset deletion
+  position           Position
+  secondaryPosition  Position?
+  jerseyNumber       Int?
+  registrationStatus RegistrationStatus @default(PENDING)
+  rejectionReason    String?
+  isSold             Boolean            @default(false)
+  finalAuctionPrice  Float?
+  teamId             String?
+  deletedAt          DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  season          Season              @relation(fields: [seasonId], references: [id])
+  category        PlayerCategory?     @relation(fields: [categoryId], references: [id])
+  team            Team?               @relation(fields: [teamId], references: [id])
+  auctionSessions AuctionSession[]
+  performances    PlayerPerformance[]
+
+  @@index([seasonId, registrationStatus, isSold])
+  @@index([teamId])
+  @@index([studentId])
+}
+
+model Team {
+  id             String    @id @default(uuid())
+  seasonId       String
+  ownerId        String    @unique
+  name           String
+  code           String    // Short 3-letter code e.g. "FCB"
+  logoUrl        String?
+  primaryColor   String?
+  secondaryColor String?
+  deletedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  season      Season          @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  owner       User            @relation(fields: [ownerId], references: [id])
+  wallet      TeamWallet?
+  players     Player[]
+  bids        AuctionBid[]
+  winners     AuctionWinner[]
+  homeMatches Match[]         @relation("HomeTeam")
+  awayMatches Match[]         @relation("AwayTeam")
+  standings   Standings?
+
+  @@index([seasonId])
+}
+
+model TeamWallet {
+  id                 String   @id @default(uuid())
+  teamId             String   @unique
+  allocatedBudget    Float
+  spentAmount        Float    @default(0)
+  currentBalance     Float
+  maxPlayerLimit     Int      @default(15)
+  playersBoughtCount Int      @default(0)
+  updatedAt          DateTime @updatedAt
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+}
+
+model AuctionSession {
+  id                     String        @id @default(uuid())
+  seasonId               String
+  playerId               String
+  auctionType            AuctionType   @default(NORMAL)
+  status                 AuctionStatus @default(SCHEDULED)
+  currentBid             Float         @default(0)
+  currentWinnerId        String?
+  startTime              DateTime?
+  endTime                DateTime?
+  timerSeconds           Int           @default(30)
+  pausedRemainingSeconds Int?
+  isSealed               Boolean       @default(false)
+  sealedBids             Json?         // Array of { teamId, amount, createdAt } for blind bids
+  version                Int           @default(1) // Optimistic locking counter
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  season Season         @relation(fields: [seasonId], references: [id])
+  player Player         @relation(fields: [playerId], references: [id])
+  bids   AuctionBid[]
+  winner AuctionWinner?
+
+  @@index([seasonId, status])
+  @@index([playerId])
+}
+
+model AuctionBid {
+  id               String   @id @default(uuid())
+  auctionSessionId String
+  teamId           String
+  amount           Float
+  isBlindBid       Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  auctionSession AuctionSession @relation(fields: [auctionSessionId], references: [id], onDelete: Cascade)
+  team           Team           @relation(fields: [teamId], references: [id])
+
+  @@index([auctionSessionId, amount(sort: Desc), createdAt(sort: Asc)])
+  @@index([teamId])
+}
+
+model AuctionWinner {
+  id               String   @id @default(uuid())
+  auctionSessionId String   @unique
+  teamId           String
+  winningAmount    Float
+  wonAt            DateTime @default(now())
+
+  auctionSession AuctionSession @relation(fields: [auctionSessionId], references: [id])
+  team           Team           @relation(fields: [teamId], references: [id])
+}
+
+model Tournament {
+  id        String   @id @default(uuid())
+  seasonId  String
+  name      String
+  format    String   // "ROUND_ROBIN", "KNOCKOUT", "HYBRID"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  season    Season      @relation(fields: [seasonId], references: [id])
+  matches   Match[]
+  standings Standings[]
+}
+
+model Match {
+  id                 String      @id @default(uuid())
+  tournamentId       String
+  homeTeamId         String
+  awayTeamId         String
+  scheduledAt        DateTime
+  status             MatchStatus @default(SCHEDULED)
+  isTwoLegged        Boolean     @default(false)
+  homeScore          Int         @default(0)
+  awayScore          Int         @default(0)
+  leg1HomeScore      Int?        @default(0)
+  leg1AwayScore      Int?        @default(0)
+  leg2HomeScore      Int?        @default(0)
+  leg2AwayScore      Int?        @default(0)
+  aggregateHomeScore Int?        @default(0)
+  aggregateAwayScore Int?        @default(0)
+  roundName          String?     // e.g. "Matchday 1", "Semi Final"
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  tournament   Tournament          @relation(fields: [tournamentId], references: [id])
+  homeTeam     Team                @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam     Team                @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  legs         MatchLeg[]
+  performances PlayerPerformance[]
+
+  @@index([tournamentId, status])
+  @@index([scheduledAt])
+}
+
+model MatchLeg {
+  id        String  @id @default(uuid())
+  matchId   String
+  legNumber Int     @default(1)
+  homeScore Int     @default(0)
+  awayScore Int     @default(0)
+  isDone    Boolean @default(false)
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+}
+
+model Standings {
+  id           String   @id @default(uuid())
+  tournamentId String
+  teamId       String   @unique
+  played       Int      @default(0)
+  won          Int      @default(0)
+  drawn        Int      @default(0)
+  lost         Int      @default(0)
+  goalsFor     Int      @default(0)
+  goalsAgainst Int      @default(0)
+  goalDiff     Int      @default(0)
+  points       Int      @default(0)
+  updatedAt    DateTime @updatedAt
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  team       Team       @relation(fields: [teamId], references: [id])
+
+  @@index([tournamentId, points(sort: Desc), goalDiff(sort: Desc)])
+}
+
+model PlayerPerformance {
+  id            String @id @default(uuid())
+  matchId       String
+  playerId      String
+  goals         Int    @default(0)
+  assists       Int    @default(0)
+  yellowCards   Int    @default(0)
+  redCards      Int    @default(0)
+  minutesPlayed Int    @default(0)
+  rating        Float? @default(0)
+
+  match  Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id])
+
+  @@index([matchId])
+  @@index([playerId])
+}
+
+model News {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  content     String
+  imageUrl    String?
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  details   Json
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, isRead])
+}
