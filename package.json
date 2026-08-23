@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "build": "cd football-auction-frontend && npm run build",
     "dev:backend": "cd football-auction-backend && npm run dev",
     "dev:frontend": "cd football-auction-frontend && npm run dev",
     "build:frontend": "cd football-auction-frontend && npm run build",
