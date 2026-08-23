@@ -33,6 +33,12 @@ const updateStatusSchema = z.object({
   }),
 });
 
+// Get current active auction stage session
+router.get('/active', AuctionController.getActiveSession);
+
+// Get unsold players pool for Podium Admin
+router.get('/unsold-pool', AuctionController.getUnsoldPool);
+
 // Auction routes guarded for LIVE_AUCTION phase
 router.post(
   '/session',

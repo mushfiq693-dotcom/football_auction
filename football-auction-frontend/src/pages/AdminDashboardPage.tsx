@@ -3,7 +3,21 @@ import { useGlobalPhase } from '../contexts/GlobalStateContext';
 import { useAuth } from '../contexts/AuthContext';
 import type { Phase, Player, User } from '../types';
 import { api } from '../services/api';
-import { Shield, Radio, Activity, Trophy, Settings, CheckCircle2, UserCheck, ShieldAlert, Check, X } from 'lucide-react';
+import {
+  Shield,
+  Radio,
+  Activity,
+  Trophy,
+  Settings,
+  CheckCircle2,
+  UserCheck,
+  ShieldAlert,
+  Check,
+  X,
+  Trash2,
+  Calendar,
+  AlertTriangle,
+} from 'lucide-react';
 
 export const AdminDashboardPage: React.FC = () => {
   const { activePhase, refetchState } = useGlobalPhase();
@@ -18,6 +32,15 @@ export const AdminDashboardPage: React.FC = () => {
   // Pending Admin Approvals State (Super Admin Only)
   const [pendingAdmins, setPendingAdmins] = useState<User[]>([]);
   const [loadingAdmins, setLoadingAdmins] = useState<boolean>(false);
+
+  // Nuke Modal State
+  const [nukeModalLevel, setNukeModalLevel] = useState<1 | 2 | 3 | null>(null);
+  const [adminPassword, setAdminPassword] = useState<string>('');
+  const [nuking, setNuking] = useState<boolean>(false);
+
+  // Tournament Fixture Generation
+  const [isTwoLegged, setIsTwoLegged] = useState<boolean>(false);
+  const [generatingFixtures, setGeneratingFixtures] = useState<boolean>(false);
 
   const fetchPlayers = async () => {
     try {
@@ -88,11 +111,46 @@ export const AdminDashboardPage: React.FC = () => {
     }
   };
 
+  const handleGenerateFixtures = async () => {
+    try {
+      setGeneratingFixtures(true);
+      setMsg(null);
+      await api.post('/tournaments/default/fixtures', {
+        seasonId: 'default-season',
+        isTwoLegged,
+      });
+      setMsg(`Tournament fixtures (${isTwoLegged ? 'Two-Legged' : 'Single Match'}) generated successfully!`);
+    } catch (err: any) {
+      setMsg(err.response?.data?.message || 'Failed to generate fixtures');
+    } finally {
+      setGeneratingFixtures(false);
+    }
+  };
+
+  const handleExecuteNuke = async () => {
+    if (!nukeModalLevel || !adminPassword) return;
+    try {
+      setNuking(true);
+      setMsg(null);
+      const endpoint = `/nuke/level${nukeModalLevel}`;
+      const res = await api.post(endpoint, { password: adminPassword });
+      setMsg(res.data.data?.message || `Level ${nukeModalLevel} reset completed.`);
+      setNukeModalLevel(null);
+      setAdminPassword('');
+      refetchState();
+      fetchPlayers();
+    } catch (err: any) {
+      setMsg(err.response?.data?.message || 'Reset authorization failed');
+    } finally {
+      setNuking(false);
+    }
+  };
+
   const phases: { key: Phase; title: string; desc: string; icon: any }[] = [
     { key: 'SETUP', title: 'Phase 1: Setup', desc: 'Configure season rules, categories, budgets', icon: Settings },
-    { key: 'PLAYER_REGISTRATION', title: 'Phase 2: Player Registration', desc: 'Open player profile submissions and admin verifications', icon: Activity },
-    { key: 'LIVE_AUCTION', title: 'Phase 3: Live Auction', desc: 'Enable live bidding stage and Socket.IO broadcast channels', icon: Radio },
-    { key: 'LIVE_TOURNAMENT', title: 'Phase 4: Live Tournament', desc: 'Enable match score updates, fixtures, and standings', icon: Trophy },
+    { key: 'PLAYER_REGISTRATION', title: 'Phase 2: Player Registration', desc: 'Open player submissions and verifications', icon: Activity },
+    { key: 'LIVE_AUCTION', title: 'Phase 3: Live Auction', desc: 'Enable live bidding podium and Socket.IO broadcast', icon: Radio },
+    { key: 'LIVE_TOURNAMENT', title: 'Phase 4: Live Tournament', desc: 'Enable match scores, fixtures, and statistics', icon: Trophy },
   ];
 
   return (
@@ -103,13 +161,13 @@ export const AdminDashboardPage: React.FC = () => {
           <Shield className="w-6 h-6" />
         </div>
         <div>
-          <h1 className="text-3xl font-extrabold text-white">Admin Command Center</h1>
-          <p className="text-sm text-slate-400">Global State Machine controller and franchise management</p>
+          <h1 className="text-3xl font-extrabold text-white">Super Admin Command Center</h1>
+          <p className="text-sm text-slate-400">Global State Machine controller, fixtures, and lifecycle management</p>
         </div>
       </div>
 
       {msg && (
-        <div className="p-4 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-300 text-sm font-semibold">
+        <div className="p-4 rounded-2xl bg-purple-500/20 border border-purple-500/40 text-purple-300 text-sm font-semibold">
           {msg}
         </div>
       )}
@@ -154,13 +212,44 @@ export const AdminDashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Super Admin Section: Pending Admin Registration Approvals */}
+      {/* Tournament Fixture Generation (Phase 4 Setup) */}
+      <div className="glass-card p-8 rounded-3xl border border-slate-800 space-y-5">
+        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-purple-400" />
+          <span>Tournament Fixture Generator</span>
+        </h2>
+        <p className="text-xs text-slate-400">
+          Generate round-robin tournament fixtures with single-match or two-legged (Home & Away) aggregated scoring.
+        </p>
+
+        <div className="flex flex-wrap items-center gap-6 pt-2">
+          <label className="flex items-center gap-2 cursor-pointer text-sm font-semibold text-slate-300">
+            <input
+              type="checkbox"
+              checked={isTwoLegged}
+              onChange={(e) => setIsTwoLegged(e.target.checked)}
+              className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 bg-slate-900 border-slate-700"
+            />
+            <span>Enable Two-Legged Fixtures (Home & Away Aggregate)</span>
+          </label>
+
+          <button
+            onClick={handleGenerateFixtures}
+            disabled={generatingFixtures}
+            className="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition-all disabled:opacity-50"
+          >
+            {generatingFixtures ? 'Generating...' : 'Generate Season Fixtures'}
+          </button>
+        </div>
+      </div>
+
+      {/* Super Admin Section: Pending Admin Approvals */}
       {user?.role === 'SUPER_ADMIN' && (
         <div className="glass-card p-8 rounded-3xl border border-purple-500/30 space-y-6 neon-glow">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <ShieldAlert className="w-5 h-5 text-purple-400" />
-              <span>Pending Admin Account Approvals (Super Admin Only)</span>
+              <span>Pending Admin Account Approvals</span>
             </h2>
             <span className="text-xs px-3 py-1 rounded-full bg-purple-900/60 text-purple-300 font-mono">
               {pendingAdmins.length} pending
@@ -177,7 +266,6 @@ export const AdminDashboardPage: React.FC = () => {
                     <th className="py-3.5 px-4">Full Name</th>
                     <th className="py-3.5 px-4">Email</th>
                     <th className="py-3.5 px-4">Requested Role</th>
-                    <th className="py-3.5 px-4">Registration Date</th>
                     <th className="py-3.5 px-4 text-right">Super Admin Action</th>
                   </tr>
                 </thead>
@@ -187,9 +275,6 @@ export const AdminDashboardPage: React.FC = () => {
                       <td className="py-3.5 px-4 font-bold text-white">{adm.fullName}</td>
                       <td className="py-3.5 px-4 text-slate-300">{adm.email}</td>
                       <td className="py-3.5 px-4 font-mono text-xs text-purple-400 font-bold">{adm.role}</td>
-                      <td className="py-3.5 px-4 text-xs text-slate-400">
-                        {new Date(adm.createdAt || Date.now()).toLocaleDateString()}
-                      </td>
                       <td className="py-3.5 px-4 text-right space-x-2">
                         <button
                           onClick={() => handleVerifyAdmin(adm.id, true)}
@@ -237,8 +322,8 @@ export const AdminDashboardPage: React.FC = () => {
               <thead className="bg-slate-900/90 text-xs uppercase text-slate-400 border-b border-slate-800">
                 <tr>
                   <th className="py-3.5 px-4">Player Name</th>
+                  <th className="py-3.5 px-4">Student ID</th>
                   <th className="py-3.5 px-4">Position</th>
-                  <th className="py-3.5 px-4">Category</th>
                   <th className="py-3.5 px-4">Status</th>
                   <th className="py-3.5 px-4 text-right">Verification Action</th>
                 </tr>
@@ -247,14 +332,18 @@ export const AdminDashboardPage: React.FC = () => {
                 {players.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-900/50 transition-colors">
                     <td className="py-3.5 px-4 font-bold text-white">{p.user?.fullName || 'Player'}</td>
+                    <td className="py-3.5 px-4 text-xs font-mono text-slate-400">{p.studentId || 'N/A'}</td>
                     <td className="py-3.5 px-4 text-xs font-mono text-slate-300">{p.position}</td>
-                    <td className="py-3.5 px-4 text-xs text-slate-400">{p.category?.name || 'Standard'}</td>
                     <td className="py-3.5 px-4">
-                      <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full ${
-                        p.registrationStatus === 'APPROVED' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
-                        p.registrationStatus === 'REJECTED' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
-                        'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                      }`}>
+                      <span
+                        className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full ${
+                          p.registrationStatus === 'APPROVED'
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            : p.registrationStatus === 'REJECTED'
+                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                            : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                        }`}
+                      >
                         {p.registrationStatus}
                       </span>
                     </td>
@@ -265,7 +354,7 @@ export const AdminDashboardPage: React.FC = () => {
                             onClick={() => handleVerifyPlayer(p.id, 'APPROVED')}
                             className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all"
                           >
-                            Approve Profile
+                            Approve
                           </button>
                           <button
                             onClick={() => handleVerifyPlayer(p.id, 'REJECTED')}
@@ -287,6 +376,115 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Super Admin Module 4: Lifecycle Reset (Nuke Protocols) */}
+      {user?.role === 'SUPER_ADMIN' && (
+        <div className="glass-card p-8 rounded-3xl border border-red-500/30 space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-2xl bg-red-600/20 text-red-400">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-white">The "Lifecycle Reset" (Nuke Protocols)</h2>
+              <p className="text-xs text-slate-400">
+                Irreversible protocols to reset database state and wipe Cloudinary assets for next season
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Level 1 */}
+            <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+              <span className="text-xs font-mono font-bold text-amber-400 uppercase">Level 1 Protocol</span>
+              <h3 className="text-base font-bold text-white">Tournament Wipe</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Deletes match fixtures, scores, points tables, and stats. Reverts system to the end of auction (Phase 3).
+              </p>
+              <button
+                onClick={() => setNukeModalLevel(1)}
+                className="w-full py-2.5 rounded-xl bg-amber-600/80 hover:bg-amber-500 text-white font-bold text-xs transition-all"
+              >
+                Execute Level 1 Wipe
+              </button>
+            </div>
+
+            {/* Level 2 */}
+            <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+              <span className="text-xs font-mono font-bold text-orange-400 uppercase">Level 2 Protocol</span>
+              <h3 className="text-base font-bold text-white">Roster Wipe</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Deletes all players, teams, managers, ledgers, and Cloudinary photos. Retains season rules. Reverts to Phase 1.
+              </p>
+              <button
+                onClick={() => setNukeModalLevel(2)}
+                className="w-full py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs shadow-lg shadow-orange-600/30 transition-all"
+              >
+                Execute Level 2 Wipe
+              </button>
+            </div>
+
+            {/* Level 3 */}
+            <div className="p-6 rounded-2xl bg-slate-900/80 border border-red-500/40 space-y-4">
+              <span className="text-xs font-mono font-bold text-red-400 uppercase">Level 3 Protocol</span>
+              <h3 className="text-base font-bold text-white">Factory Reset</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Wipes all tables and media storage. Retains only Super Admin credentials. Fresh season ready.
+              </p>
+              <button
+                onClick={() => setNukeModalLevel(3)}
+                className="w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg shadow-red-600/40 transition-all"
+              >
+                Execute Factory Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Nuke Confirmation Password Modal */}
+      {nukeModalLevel && (
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-6">
+          <div className="glass-card max-w-md w-full p-8 rounded-3xl border border-red-500/50 space-y-6 shadow-2xl">
+            <div className="flex items-center gap-3 text-red-400">
+              <AlertTriangle className="w-8 h-8" />
+              <h3 className="text-xl font-black text-white">Confirm Level {nukeModalLevel} Reset</h3>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              This action is <strong className="text-red-400">irreversible</strong>. Enter your Super Admin password to authorize this lifecycle reset.
+            </p>
+
+            <div>
+              <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Super Admin Password</label>
+              <input
+                type="password"
+                placeholder="Enter password..."
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-red-500"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => {
+                  setNukeModalLevel(null);
+                  setAdminPassword('');
+                }}
+                className="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold hover:bg-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleExecuteNuke}
+                disabled={nuking || !adminPassword}
+                className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-black shadow-xl shadow-red-600/40 disabled:opacity-50"
+              >
+                {nuking ? 'Executing...' : 'Authorize Reset'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

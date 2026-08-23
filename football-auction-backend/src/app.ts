@@ -7,6 +7,9 @@ import playerRoutes from './routes/player.routes';
 import teamRoutes from './routes/team.routes';
 import auctionRoutes from './routes/auction.routes';
 import tournamentRoutes from './routes/tournament.routes';
+import uploadRoutes from './routes/upload.routes';
+import nukeRoutes from './routes/nuke.routes';
+import newsRoutes from './routes/news.routes';
 
 const app = express();
 
@@ -27,6 +30,9 @@ app.use('/api/v1/players', playerRoutes);
 app.use('/api/v1/teams', teamRoutes);
 app.use('/api/v1/auction', auctionRoutes);
 app.use('/api/v1/tournaments', tournamentRoutes);
+app.use('/api/v1/upload', uploadRoutes);
+app.use('/api/v1/nuke', nukeRoutes);
+app.use('/api/v1/news', newsRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

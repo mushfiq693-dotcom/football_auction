@@ -23,8 +23,8 @@ export class TournamentController {
   static async generateFixtures(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
-      const { seasonId } = req.body;
-      const matches = await TournamentService.generateFixtures(id, seasonId);
+      const { seasonId, isTwoLegged } = req.body;
+      const matches = await TournamentService.generateFixtures(id, seasonId, isTwoLegged || false);
 
       res.status(200).json({
         success: true,
@@ -39,15 +39,23 @@ export class TournamentController {
   static async updateMatchResult(req: Request, res: Response, next: NextFunction) {
     try {
       const matchId = req.params.matchId as string;
-      const { homeScore, awayScore, status } = req.body;
+      const { homeScore, awayScore, status, playerPerformances } = req.body;
 
-      const match = await TournamentService.updateMatchResult(matchId, homeScore, awayScore, status);
+      const match = await TournamentService.updateMatchResult(
+        matchId,
+        homeScore,
+        awayScore,
+        status,
+        playerPerformances
+      );
 
       const io = req.app.get('io');
       if (io) {
         io.emit('match:score_update', match);
         const standings = await TournamentService.getStandings(match.tournamentId);
         io.emit('standings:update', standings);
+        const statistics = await TournamentService.getPlayerStatistics(match.tournamentId);
+        io.emit('statistics:update', statistics);
       }
 
       res.status(200).json({
@@ -68,6 +76,34 @@ export class TournamentController {
       res.status(200).json({
         success: true,
         data: standings,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getMatches(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const matches = await TournamentService.getMatches(id);
+
+      res.status(200).json({
+        success: true,
+        data: matches,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getPlayerStatistics(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const statistics = await TournamentService.getPlayerStatistics(id);
+
+      res.status(200).json({
+        success: true,
+        data: statistics,
       });
     } catch (error) {
       next(error);

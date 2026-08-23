@@ -12,6 +12,11 @@ const router = Router();
 const registerPlayerSchema = z.object({
   body: z.object({
     seasonId: z.string().uuid().optional().or(z.literal('')),
+    studentId: z.string().min(2, 'Student ID is required').optional(),
+    academicSession: z.string().min(4, 'Academic session is required').optional(),
+    jerseyName: z.string().min(2, 'Jersey name is required').optional(),
+    photoUrl: z.string().url().optional().or(z.literal('')),
+    photoPublicId: z.string().optional().or(z.literal('')),
     position: z.nativeEnum(Position),
     secondaryPosition: z.nativeEnum(Position).optional().or(z.literal('')).nullable(),
     jerseyNumber: z.preprocess(
@@ -33,7 +38,7 @@ const verifyPlayerSchema = z.object({
 router.post(
   '/register',
   authenticate,
-  roleGuard(Role.PLAYER),
+  roleGuard(Role.PLAYER, Role.SUPER_ADMIN),
   phaseGuard(Phase.PLAYER_REGISTRATION),
   validate(registerPlayerSchema),
   PlayerController.register

@@ -1,40 +1,61 @@
 import { prisma } from '../config/database';
 import { AppError } from '../middlewares/errorHandler.middleware';
-import { MatchStatus } from '@prisma/client';
+import { MatchStatus, Position } from '@prisma/client';
 
 export class TournamentService {
   /**
-   * Generate Round-Robin Fixtures for a Tournament
+   * Generate Round-Robin Fixtures for a Tournament (Supports Single or Two-Legged)
    */
-  static async generateFixtures(tournamentId: string, seasonId: string) {
+  static async generateFixtures(tournamentId: string, seasonId: string, isTwoLegged: boolean = false) {
     const teams = await prisma.team.findMany({
       where: { seasonId, deletedAt: null },
     });
 
     if (teams.length < 2) {
-      throw new AppError(400, 'At least 2 teams are required to generate fixtures');
+      throw new AppError(400, 'At least 2 teams are required to generate tournament fixtures');
     }
 
     const matchesData: any[] = [];
     const n = teams.length;
+    let matchdayCount = 1;
 
-    // Single Round Robin algorithm
+    // Leg 1: Single Round Robin
     for (let i = 0; i < n; i++) {
       for (let j = i + 1; j < n; j++) {
         matchesData.push({
           tournamentId,
           homeTeamId: teams[i].id,
           awayTeamId: teams[j].id,
-          scheduledAt: new Date(Date.now() + matchesData.length * 86400000), // Spaced by days
-          roundName: `Matchday ${matchesData.length + 1}`,
+          isTwoLegged,
+          scheduledAt: new Date(Date.now() + matchesData.length * 86400000),
+          roundName: isTwoLegged ? `Leg 1 - Matchday ${matchdayCount}` : `Matchday ${matchdayCount}`,
           status: MatchStatus.SCHEDULED,
         });
+        matchdayCount++;
+      }
+    }
+
+    // Leg 2: Reverse Home/Away if Two-Legged is toggled
+    if (isTwoLegged) {
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          matchesData.push({
+            tournamentId,
+            homeTeamId: teams[j].id,
+            awayTeamId: teams[i].id,
+            isTwoLegged: true,
+            scheduledAt: new Date(Date.now() + matchesData.length * 86400000),
+            roundName: `Leg 2 - Matchday ${matchdayCount}`,
+            status: MatchStatus.SCHEDULED,
+          });
+          matchdayCount++;
+        }
       }
     }
 
     await prisma.match.createMany({ data: matchesData });
 
-    // Initialize Standings Table for teams
+    // Initialize Standings Table for all participating teams
     for (const team of teams) {
       await prisma.standings.upsert({
         where: { teamId: team.id },
@@ -49,22 +70,57 @@ export class TournamentService {
     return await prisma.match.findMany({
       where: { tournamentId },
       include: {
-        homeTeam: { select: { name: true, code: true, logoUrl: true } },
-        awayTeam: { select: { name: true, code: true, logoUrl: true } },
+        homeTeam: { select: { id: true, name: true, code: true, logoUrl: true } },
+        awayTeam: { select: { id: true, name: true, code: true, logoUrl: true } },
       },
+      orderBy: { scheduledAt: 'asc' },
     });
   }
 
   /**
-   * Record Match Result and Recalculate Standings Dynamically
+   * Record Match Result and Recalculate Standings & Player Stats
    */
-  static async updateMatchResult(matchId: string, homeScore: number, awayScore: number, status: MatchStatus) {
+  static async updateMatchResult(
+    matchId: string,
+    homeScore: number,
+    awayScore: number,
+    status: MatchStatus,
+    playerPerformances?: Array<{
+      playerId: string;
+      goals: number;
+      assists: number;
+      yellowCards: number;
+      redCards: number;
+    }>
+  ) {
     return await prisma.$transaction(async (tx) => {
       const match = await tx.match.update({
         where: { id: matchId },
-        data: { homeScore, awayScore, status },
+        data: {
+          homeScore,
+          awayScore,
+          status,
+          aggregateHomeScore: homeScore,
+          aggregateAwayScore: awayScore,
+        },
         include: { homeTeam: true, awayTeam: true },
       });
+
+      // Record Player Performance Statistics if provided
+      if (playerPerformances && playerPerformances.length > 0) {
+        for (const perf of playerPerformances) {
+          await tx.playerPerformance.create({
+            data: {
+              matchId,
+              playerId: perf.playerId,
+              goals: perf.goals || 0,
+              assists: perf.assists || 0,
+              yellowCards: perf.yellowCards || 0,
+              redCards: perf.redCards || 0,
+            },
+          });
+        }
+      }
 
       if (status === MatchStatus.COMPLETED) {
         // Recalculate Home Team Standings
@@ -94,7 +150,7 @@ export class TournamentService {
         played: { increment: 1 },
         won: isWin ? { increment: 1 } : undefined,
         drawn: isDraw ? { increment: 1 } : undefined,
-        lost: (!isWin && !isDraw) ? { increment: 1 } : undefined,
+        lost: !isWin && !isDraw ? { increment: 1 } : undefined,
         goalsFor: { increment: goalsFor },
         goalsAgainst: { increment: goalsAgainst },
         goalDiff: { increment: goalsFor - goalsAgainst },
@@ -106,7 +162,7 @@ export class TournamentService {
         played: 1,
         won: isWin ? 1 : 0,
         drawn: isDraw ? 1 : 0,
-        lost: (!isWin && !isDraw) ? 1 : 0,
+        lost: !isWin && !isDraw ? 1 : 0,
         goalsFor,
         goalsAgainst,
         goalDiff: goalsFor - goalsAgainst,
@@ -115,17 +171,136 @@ export class TournamentService {
     });
   }
 
-  static async getStandings(tournamentId: string) {
+  /**
+   * Get Standings Table
+   */
+  static async getStandings(tournamentId?: string) {
+    const where: any = {};
+    if (tournamentId && tournamentId !== 'default') {
+      where.tournamentId = tournamentId;
+    }
+
     return await prisma.standings.findMany({
-      where: { tournamentId },
+      where,
       include: {
         team: { select: { id: true, name: true, code: true, logoUrl: true } },
       },
-      orderBy: [
-        { points: 'desc' },
-        { goalDiff: 'desc' },
-        { goalsFor: 'desc' },
-      ],
+      orderBy: [{ points: 'desc' }, { goalDiff: 'desc' }, { goalsFor: 'desc' }],
     });
+  }
+
+  /**
+   * Get Matches List
+   */
+  static async getMatches(tournamentId?: string) {
+    const where: any = {};
+    if (tournamentId && tournamentId !== 'default') {
+      where.tournamentId = tournamentId;
+    }
+
+    return await prisma.match.findMany({
+      where,
+      include: {
+        homeTeam: { select: { id: true, name: true, code: true, logoUrl: true } },
+        awayTeam: { select: { id: true, name: true, code: true, logoUrl: true } },
+        performances: {
+          include: {
+            player: {
+              include: {
+                user: { select: { fullName: true } },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { scheduledAt: 'asc' },
+    });
+  }
+
+  /**
+   * Get Player Tournament Statistics (Top Scorers, Top Assists, Clean Sheets, Cards)
+   * PRD: "Track core football metrics assigned to individual players: Goals, Assists, Clean Sheets, Yellow Cards, Red Cards."
+   */
+  static async getPlayerStatistics(tournamentId?: string) {
+    const performances = await prisma.playerPerformance.findMany({
+      include: {
+        player: {
+          include: {
+            user: { select: { fullName: true, avatarUrl: true } },
+            team: { select: { name: true, code: true } },
+          },
+        },
+        match: true,
+      },
+    });
+
+    // Aggregate statistics per player
+    const statsMap = new Map<
+      string,
+      {
+        playerId: string;
+        fullName: string;
+        teamName: string;
+        teamCode: string;
+        avatarUrl?: string | null;
+        position: Position;
+        goals: number;
+        assists: number;
+        cleanSheets: number;
+        yellowCards: number;
+        redCards: number;
+        matchesPlayed: number;
+      }
+    >();
+
+    for (const p of performances) {
+      const playerId = p.playerId;
+      const current = statsMap.get(playerId) || {
+        playerId,
+        fullName: p.player.user.fullName,
+        teamName: p.player.team?.name || 'Free Agent',
+        teamCode: p.player.team?.code || 'FA',
+        avatarUrl: p.player.user.avatarUrl,
+        position: p.player.position,
+        goals: 0,
+        assists: 0,
+        cleanSheets: 0,
+        yellowCards: 0,
+        redCards: 0,
+        matchesPlayed: 0,
+      };
+
+      current.goals += p.goals;
+      current.assists += p.assists;
+      current.yellowCards += p.yellowCards;
+      current.redCards += p.redCards;
+      current.matchesPlayed += 1;
+
+      // Clean sheet condition for GK or DEFENDER
+      if (
+        (p.player.position === Position.GOALKEEPER || p.player.position === Position.DEFENDER) &&
+        p.match.status === MatchStatus.COMPLETED
+      ) {
+        const isHome = p.match.homeTeamId === p.player.teamId;
+        const opponentScore = isHome ? p.match.awayScore : p.match.homeScore;
+        if (opponentScore === 0) {
+          current.cleanSheets += 1;
+        }
+      }
+
+      statsMap.set(playerId, current);
+    }
+
+    const allStats = Array.from(statsMap.values());
+
+    return {
+      topScorers: [...allStats].sort((a, b) => b.goals - a.goals).slice(0, 10),
+      topAssists: [...allStats].sort((a, b) => b.assists - a.assists).slice(0, 10),
+      cleanSheets: [...allStats].filter((p) => p.cleanSheets > 0).sort((a, b) => b.cleanSheets - a.cleanSheets).slice(0, 10),
+      cardsLeaderboard: [...allStats]
+        .filter((p) => p.yellowCards > 0 || p.redCards > 0)
+        .sort((a, b) => b.redCards * 3 + b.yellowCards - (a.redCards * 3 + a.yellowCards))
+        .slice(0, 10),
+    };
   }
 }

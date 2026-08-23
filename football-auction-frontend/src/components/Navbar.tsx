@@ -26,6 +26,8 @@ export const Navbar: React.FC = () => {
       <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
         <Link to="/" className="hover:text-purple-400 transition-colors">Home</Link>
         <Link to="/roster" className="hover:text-purple-400 transition-colors">Players</Link>
+        <Link to="/auction" className="hover:text-purple-400 transition-colors">Live Auction</Link>
+        <Link to="/tournament" className="hover:text-purple-400 transition-colors">Tournament & News</Link>
         
         {activePhase === 'PLAYER_REGISTRATION' && (
           <Link to="/register-player" className="text-emerald-400 font-semibold hover:underline">

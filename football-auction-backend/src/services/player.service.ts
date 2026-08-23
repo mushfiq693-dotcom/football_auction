@@ -3,7 +3,12 @@ import { AppError } from '../middlewares/errorHandler.middleware';
 import { Position, RegistrationStatus } from '@prisma/client';
 
 export interface CreatePlayerProfileDto {
-  seasonId: string;
+  seasonId?: string;
+  studentId?: string;
+  academicSession?: string;
+  jerseyName?: string;
+  photoUrl?: string;
+  photoPublicId?: string;
   position: Position;
   secondaryPosition?: Position;
   jerseyNumber?: number;
@@ -17,6 +22,15 @@ export class PlayerService {
 
     if (existingPlayer) {
       throw new AppError(400, 'Player profile already exists for this user');
+    }
+
+    if (dto.studentId) {
+      const existingStudent = await prisma.player.findUnique({
+        where: { studentId: dto.studentId },
+      });
+      if (existingStudent) {
+        throw new AppError(400, 'A player with this Student ID has already registered');
+      }
     }
 
     let targetSeasonId = dto.seasonId;
@@ -40,26 +54,20 @@ export class PlayerService {
         });
       }
       targetSeasonId = activeSeason.id;
-    } else {
-      const seasonExists = await prisma.season.findUnique({ where: { id: targetSeasonId } });
-      if (!seasonExists) {
-        let activeSeason = await prisma.season.findFirst({ where: { isActive: true } });
-        if (!activeSeason) {
-          activeSeason = await prisma.season.create({
-            data: { id: targetSeasonId, name: 'Season 2026', year: 2026, isActive: true },
-          });
-        }
-        targetSeasonId = activeSeason.id;
-      }
     }
 
-    const secPos = dto.secondaryPosition && dto.secondaryPosition.trim() !== '' ? dto.secondaryPosition : undefined;
+    const secPos = dto.secondaryPosition && (dto.secondaryPosition as string).trim() !== '' ? dto.secondaryPosition : undefined;
     const jNum = dto.jerseyNumber && !isNaN(Number(dto.jerseyNumber)) && Number(dto.jerseyNumber) > 0 ? Number(dto.jerseyNumber) : undefined;
 
     const player = await prisma.player.create({
       data: {
         userId,
         seasonId: targetSeasonId,
+        studentId: dto.studentId?.trim() || undefined,
+        academicSession: dto.academicSession?.trim() || undefined,
+        jerseyName: dto.jerseyName?.trim() || undefined,
+        photoUrl: dto.photoUrl?.trim() || undefined,
+        photoPublicId: dto.photoPublicId?.trim() || undefined,
         position: dto.position,
         secondaryPosition: secPos,
         jerseyNumber: jNum,
@@ -69,6 +77,7 @@ export class PlayerService {
         user: {
           select: { fullName: true, email: true, avatarUrl: true },
         },
+        category: true,
       },
     });
 

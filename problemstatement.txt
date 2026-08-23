@@ -1,0 +1,86 @@
+Main Hackathon Problem
+
+🏆 Official Product Requirements Document (PRD)
+
+The University Football Franchise & Tournament Platform
+
+1. Executive Summary
+
+The objective is to build a single-tenant web application that manages the complete lifecycle of a university football franchise league. The system must seamlessly transition through three phases: Player Registration, Real-Time Franchise Bidding, and Live Tournament Tracking. After the tournament ends, the platform must be capable of securely resetting its database and clearing its media storage to prepare for the next season.
+
+This is not a standard CRUD application; it is a highly concurrent state machine.
+
+2. The Event Lifecycle (System States)
+
+The platform operates on a strict global state machine. The frontend must act as a Single Page Application (SPA), conditionally rendering the public landing page and locking/unlocking API routes based on the current active phase defined by the Super Admin:
+
+Phase 1: SETUP (Pre-Event): Super Admin defines rules, categories, teams, and registration status.
+Phase 2: REGISTRATION: Player portal opens. Updates and withdrawals are allowed.
+Phase 3: THE AUCTION: Registration freezes. Sockets open. Podium Admin controls live bidding. The public landing page shifts to the Live Podium view.
+Phase 4: TOURNAMENT: Sockets shift to live match scores. Auction routes are strictly locked. The landing page shifts to the Tournament Dashboard (Matches, Points Table, Statistics).
+3. System Actors & Access Control
+
+Super Admin (Event Manager): Configures all rules, categories, and bid ranges. Creates Team Managers. Controls the "Lifecycle Reset (Nuke)" protocols. Toggles the global system states.
+Podium Admin (The Auctioneer): Operates exclusively during Phase 3. Controls the live podium timer, toggles Normal/Blind bidding modes, and possesses overrides (pause, rollback, cancel) to resolve offline disputes.
+Team Manager (The Franchise): Participates in the live auction. Post-auction, tracks their team's tournament standings and player performance.
+Player: Registers via the portal. Post-auction, tracks their own statistics and match fixtures.
+Spectator (Public): Views the live auction ledger. Post-auction, views the live points table, match scores, and news portal.
+4. Module 1: Event Configuration & Registration
+
+A. Dynamic Event Rules (No Hardcoding):
+
+Total Budget: Define a fixed allowance applied to all teams.
+Categories & Tiers: Define player tiers (e.g., Platinum, Gold, Silver) with specific Base Prices.
+Bidding Math: Define percentage-based raise tiers (e.g., If the current bid is 0-3% of the total budget, the minimum raise is 0.15%). The backend calculates and serves the exact monetary increments to the UI.
+B. The Player Portal & Media Constraints:
+
+Required Data: Name, Student ID, Academic Session (dynamic), Jersey Name, and Positions (GK, CB, LB, CM, RW, ST, etc. - Must select exactly one as primary, rest as secondary).
+Image Handling: Players must upload a profile image.
+Strict Constraint: Images MUST be uploaded to a cloud storage provider (e.g., Cloudinary). Local server storage of images (/public/uploads) is highly discouraged and will limit scalability.
+5. Module 2: The Real-Time Auction Engine
+
+A. The Podium Mechanics:
+
+Podium Admin pulls a player from the "Unsold Pool" to the live stage.
+Normal Mode: Open incremental bidding. The timer resets upon every valid bid.
+Blind Mode: Sealed bids. The timer runs down to zero. Teams submit one hidden monetary bid. The highest envelope wins at T=0.
+B. The Budget Guardrails (Backend Validation):
+
+Teams have a Min_Roster limit.
+Constraint: The API must mathematically block any bid that prevents a team from buying their remaining required players at the absolute lowest base price in the system.
+C. The Concurrency Crucible (Data Transport Constraint):
+
+The Rule: Heavy HTTP polling (manually firing periodic GET requests on a fixed timer) is strictly forbidden.
+The Requirement: The live timer, current highest bid, and ledger must broadcast via event-driven streaming.
+If multiple managers bid simultaneously, the backend must utilize serialized queues or database locks to prevent double-spending and race conditions.
+6. Module 3: Football Tournament Management
+
+Once Phase 4 is triggered, the public route transforms into a Football Dashboard with three primary tabs: Matches, Points Table, and Statistics.
+
+A. Match Management:
+
+Super Admin generates fixtures (Team A vs. Team B, Time, Venue).
+The "Legged" Toggle: Super Admin can toggle whether fixtures are single-match or two-legged (Home and Away). The database schema must be robust enough to handle aggregating two legs into one fixture result.
+Live Score Tracking: Admins update the score, which broadcasts in real-time to the Spectator view.
+B. The Automated Points Table:
+
+The system automatically calculates standings based on match results.
+Metrics: Matches Played, Won (3 pts), Drawn (1 pt), Lost (0 pts), Goals For (GF), Goals Against (GA), Goal Difference (GD), Total Points.
+C. Player Statistics:
+
+Track core football metrics assigned to individual players: Goals, Assists, Clean Sheets, Yellow Cards, Red Cards.
+7. Module 4: The "Lifecycle Reset" (Nuke Protocols)
+
+To reuse the platform for the next semester, the Super Admin possesses three irreversible reset protocols.
+
+Strict Constraint: If Cloudinary or an external bucket is used, deleting records from the database MUST trigger an API call to delete the associated image assets. Orphaned cloud images will result in a penalty.
+Level 1 (Tournament Wipe): Deletes all match fixtures, scores, points tables, football stats, and news. Reverts the system back to the exact moment the auction ended.
+Level 2 (Roster Wipe): Deletes all players, teams, managers, auction ledgers, and player images. Retains all rules (Sessions, positions, categories, bidding math). Reverts to a clean Pre-Registration state (Phase 1).
+Level 3 (Factory Reset): Drops all tables and wipes all media folders. Wipes everything except the Super Admin credentials.
+8. Technical Stack Constraints
+
+Repository Structure: Frontend and Backend must be in completely separate directories or repositories.
+Frontend: React or Next.js.
+Backend: Node.js with Express.
+Database: PostgreSQL or MongoDB.
+

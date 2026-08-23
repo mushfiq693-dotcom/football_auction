@@ -20,6 +20,7 @@ const createTournamentSchema = z.object({
 const generateFixturesSchema = z.object({
   body: z.object({
     seasonId: z.string().uuid(),
+    isTwoLegged: z.boolean().optional(),
   }),
 });
 
@@ -28,6 +29,17 @@ const updateMatchSchema = z.object({
     homeScore: z.number().int().nonnegative(),
     awayScore: z.number().int().nonnegative(),
     status: z.nativeEnum(MatchStatus),
+    playerPerformances: z
+      .array(
+        z.object({
+          playerId: z.string().uuid(),
+          goals: z.number().int().nonnegative().default(0),
+          assists: z.number().int().nonnegative().default(0),
+          yellowCards: z.number().int().nonnegative().default(0),
+          redCards: z.number().int().nonnegative().default(0),
+        })
+      )
+      .optional(),
   }),
 });
 
@@ -57,5 +69,7 @@ router.patch(
 );
 
 router.get('/:id/standings', TournamentController.getStandings);
+router.get('/:id/matches', TournamentController.getMatches);
+router.get('/:id/statistics', TournamentController.getPlayerStatistics);
 
 export default router;

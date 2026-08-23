@@ -40,6 +40,11 @@ export interface Player {
   userId: string;
   seasonId: string;
   categoryId?: string;
+  studentId?: string;
+  academicSession?: string;
+  jerseyName?: string;
+  photoUrl?: string;
+  photoPublicId?: string;
   position: Position;
   secondaryPosition?: Position;
   jerseyNumber?: number;
@@ -74,6 +79,12 @@ export interface Team {
   players?: Player[];
 }
 
+export interface DynamicIncrements {
+  minRaise: number;
+  nextMinimumBid: number;
+  suggestedIncrements: number[];
+}
+
 export interface AuctionSession {
   id: string;
   seasonId: string;
@@ -84,6 +95,7 @@ export interface AuctionSession {
   currentWinnerId?: string;
   timerSeconds: number;
   player: Player;
+  dynamicIncrements?: DynamicIncrements;
 }
 
 export interface AuctionBid {
@@ -91,6 +103,7 @@ export interface AuctionBid {
   auctionSessionId: string;
   teamId: string;
   amount: number;
+  isBlindBid?: boolean;
   createdAt: string;
   team: { id: string; name: string; code: string; logoUrl?: string };
 }
@@ -102,11 +115,14 @@ export interface Match {
   awayTeamId: string;
   scheduledAt: string;
   status: MatchStatus;
+  isTwoLegged?: boolean;
   homeScore: number;
   awayScore: number;
+  aggregateHomeScore?: number;
+  aggregateAwayScore?: number;
   roundName?: string;
-  homeTeam: { name: string; code: string; logoUrl?: string };
-  awayTeam: { name: string; code: string; logoUrl?: string };
+  homeTeam: { id?: string; name: string; code: string; logoUrl?: string };
+  awayTeam: { id?: string; name: string; code: string; logoUrl?: string };
 }
 
 export interface Standings {
@@ -122,3 +138,36 @@ export interface Standings {
   points: number;
   team: { id: string; name: string; code: string; logoUrl?: string };
 }
+
+export interface PlayerStatLeader {
+  playerId: string;
+  fullName: string;
+  teamName: string;
+  teamCode: string;
+  avatarUrl?: string | null;
+  position: Position;
+  goals: number;
+  assists: number;
+  cleanSheets: number;
+  yellowCards: number;
+  redCards: number;
+  matchesPlayed: number;
+}
+
+export interface TournamentStatistics {
+  topScorers: PlayerStatLeader[];
+  topAssists: PlayerStatLeader[];
+  cleanSheets: PlayerStatLeader[];
+  cardsLeaderboard: PlayerStatLeader[];
+}
+
+export interface NewsArticle {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  imageUrl?: string | null;
+  isPublished: boolean;
+  createdAt: string;
+}
+
