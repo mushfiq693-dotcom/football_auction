@@ -1,0 +1,76 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CloudinaryService = void 0;
+const cloudinary_1 = require("cloudinary");
+const env_1 = require("./env");
+cloudinary_1.v2.config({
+    cloud_name: env_1.env.CLOUDINARY_CLOUD_NAME || 'football-auction',
+    api_key: env_1.env.CLOUDINARY_API_KEY || 'mock-key',
+    api_secret: env_1.env.CLOUDINARY_API_SECRET || 'mock-secret',
+    secure: true,
+});
+class CloudinaryService {
+    /**
+     * Upload image buffer or base64 data to Cloudinary
+     */
+    static async uploadImage(fileBuffer, folder = 'football_players') {
+        // If Cloudinary credentials are not configured, provide an SVG/mock fallback
+        if (!env_1.env.CLOUDINARY_CLOUD_NAME || !env_1.env.CLOUDINARY_API_KEY || env_1.env.CLOUDINARY_API_KEY === 'mock-key') {
+            const mockPublicId = `player_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+            return {
+                url: `https://api.dicebear.com/7.x/bottts/svg?seed=${mockPublicId}`,
+                publicId: mockPublicId,
+            };
+        }
+        return new Promise((resolve, reject) => {
+            const uploadStream = cloudinary_1.v2.uploader.upload_stream({
+                folder,
+                resource_type: 'image',
+                transformation: [{ width: 500, height: 500, crop: 'limit', quality: 'auto' }],
+            }, (error, result) => {
+                if (error || !result) {
+                    return reject(error || new Error('Cloudinary upload failed'));
+                }
+                resolve({
+                    url: result.secure_url,
+                    publicId: result.public_id,
+                });
+            });
+            uploadStream.end(fileBuffer);
+        });
+    }
+    /**
+     * Delete single asset by publicId
+     */
+    static async deleteAsset(publicId) {
+        if (!publicId || !env_1.env.CLOUDINARY_CLOUD_NAME || env_1.env.CLOUDINARY_API_KEY === 'mock-key') {
+            return true;
+        }
+        try {
+            const result = await cloudinary_1.v2.uploader.destroy(publicId);
+            return result.result === 'ok';
+        }
+        catch (err) {
+            console.error(`Failed to delete Cloudinary asset ${publicId}:`, err);
+            return false;
+        }
+    }
+    /**
+     * Bulk delete assets by list of publicIds
+     */
+    static async deleteAssets(publicIds) {
+        if (!publicIds || publicIds.length === 0 || !env_1.env.CLOUDINARY_CLOUD_NAME || env_1.env.CLOUDINARY_API_KEY === 'mock-key') {
+            return;
+        }
+        try {
+            const validIds = publicIds.filter(Boolean);
+            if (validIds.length > 0) {
+                await cloudinary_1.v2.api.delete_resources(validIds);
+            }
+        }
+        catch (err) {
+            console.error('Failed to bulk delete Cloudinary assets:', err);
+        }
+    }
+}
+exports.CloudinaryService = CloudinaryService;
