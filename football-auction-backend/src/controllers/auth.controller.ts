@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
+import { Role } from '@prisma/client';
 
 export class AuthController {
   static async register(req: Request, res: Response, next: NextFunction) {
@@ -40,26 +41,27 @@ export class AuthController {
     }
   }
 
-  static async getPendingAdmins(_req: Request, res: Response, next: NextFunction) {
+  static async getPendingUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      const pendingAdmins = await AuthService.getPendingAdmins();
+      const roleFilter = req.query.role as Role | undefined;
+      const pendingUsers = await AuthService.getPendingUsers(roleFilter);
       res.status(200).json({
         success: true,
-        data: pendingAdmins,
+        data: pendingUsers,
       });
     } catch (error) {
       next(error);
     }
   }
 
-  static async verifyAdmin(req: Request, res: Response, next: NextFunction) {
+  static async verifyUser(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.params.userId as string;
       const { approved } = req.body;
-      const result = await AuthService.verifyAdmin(userId, approved);
+      const result = await AuthService.verifyUser(userId, approved);
       res.status(200).json({
         success: true,
-        message: `Admin registration ${approved ? 'approved' : 'rejected'} successfully`,
+        message: `User registration ${approved ? 'approved' : 'rejected'} successfully`,
         data: result,
       });
     } catch (error) {

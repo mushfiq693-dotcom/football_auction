@@ -25,7 +25,7 @@ const loginSchema = z.object({
   }),
 });
 
-const verifyAdminSchema = z.object({
+const verifyUserSchema = z.object({
   body: z.object({
     approved: z.boolean(),
   }),
@@ -35,8 +35,12 @@ router.post('/register', validate(registerSchema), AuthController.register);
 router.post('/login', validate(loginSchema), AuthController.login);
 router.get('/me', authenticate, AuthController.me);
 
-// Super Admin Management Endpoints
-router.get('/pending-admins', authenticate, roleGuard(Role.SUPER_ADMIN), AuthController.getPendingAdmins);
-router.patch('/verify-admin/:userId', authenticate, roleGuard(Role.SUPER_ADMIN), validate(verifyAdminSchema), AuthController.verifyAdmin);
+// Super Admin User Approval Endpoints
+router.get('/pending-users', authenticate, roleGuard(Role.SUPER_ADMIN), AuthController.getPendingUsers);
+router.patch('/verify-user/:userId', authenticate, roleGuard(Role.SUPER_ADMIN), validate(verifyUserSchema), AuthController.verifyUser);
+
+// Backward-compatible endpoints
+router.get('/pending-admins', authenticate, roleGuard(Role.SUPER_ADMIN), AuthController.getPendingUsers);
+router.patch('/verify-admin/:userId', authenticate, roleGuard(Role.SUPER_ADMIN), validate(verifyUserSchema), AuthController.verifyUser);
 
 export default router;

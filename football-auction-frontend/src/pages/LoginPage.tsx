@@ -21,7 +21,11 @@ export const LoginPage: React.FC = () => {
       login(res.data.data.token, res.data.data.user);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed');
+      if (!err.response) {
+        setError('Cannot connect to backend server. Make sure backend is running on port 5001.');
+      } else {
+        setError(err.response?.data?.message || 'Login failed');
+      }
     } finally {
       setLoading(false);
     }

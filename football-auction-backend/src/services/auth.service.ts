@@ -30,7 +30,9 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const role = dto.role || Role.PLAYER;
-    const isAdminApproved = role === Role.ADMIN ? false : true;
+    
+    // Super Admin is auto-approved. All other roles require Super Admin approval.
+    const isAdminApproved = role === Role.SUPER_ADMIN ? true : false;
 
     const user = await prisma.user.create({
       data: {
@@ -51,11 +53,11 @@ export class AuthService {
       },
     });
 
-    if (role === Role.ADMIN && !isAdminApproved) {
+    if (!isAdminApproved) {
       return {
         user,
         token: null,
-        message: 'Admin registration submitted! A Super Admin must approve your account before you can log in.',
+        message: 'Account registered successfully! A Super Admin must approve your account before you can log in.',
       };
     }
 
@@ -65,7 +67,7 @@ export class AuthService {
       { expiresIn: env.JWT_EXPIRES_IN as any }
     );
 
-    return { user, token };
+    return { user, token, message: 'Super Admin account created and logged in successfully!' };
   }
 
   static async login(dto: LoginDto) {
@@ -82,8 +84,11 @@ export class AuthService {
       throw new AppError(401, 'Invalid credentials');
     }
 
-    if (user.role === Role.ADMIN && !user.isAdminApproved) {
-      throw new AppError(403, 'Your Admin account is pending approval by a Super Admin');
+    if (!user.isAdminApproved) {
+      throw new AppError(
+        403,
+        `Your account (${user.role}) is pending Super Admin approval. Please wait for the Super Admin to approve your registration.`
+      );
     }
 
     const token = jwt.sign(
@@ -124,25 +129,31 @@ export class AuthService {
     return userWithoutPassword;
   }
 
-  static async getPendingAdmins() {
+  static async getPendingUsers(roleFilter?: Role) {
+    const where: any = {
+      isAdminApproved: false,
+      deletedAt: null,
+    };
+
+    if (roleFilter) {
+      where.role = roleFilter;
+    }
+
     return await prisma.user.findMany({
-      where: {
-        role: Role.ADMIN,
-        isAdminApproved: false,
-        deletedAt: null,
-      },
+      where,
       select: {
         id: true,
         email: true,
         fullName: true,
         role: true,
         createdAt: true,
+        phone: true,
       },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  static async verifyAdmin(userId: string, approved: boolean) {
+  static async verifyUser(userId: string, approved: boolean) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -159,12 +170,10 @@ export class AuthService {
       });
       return { status: 'APPROVED', user: updatedUser };
     } else {
-      const updatedUser = await prisma.user.update({
+      await prisma.user.delete({
         where: { id: userId },
-        data: { role: Role.PLAYER, isAdminApproved: true },
-        select: { id: true, email: true, fullName: true, role: true, isAdminApproved: true },
       });
-      return { status: 'REJECTED', user: updatedUser };
+      return { status: 'REJECTED', message: 'User registration request rejected and deleted.' };
     }
   }
 }

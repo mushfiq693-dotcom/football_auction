@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext';
 import type { Phase, Player, User } from '../types';
 import { api } from '../services/api';
 import {
-  Shield,
   Radio,
   Activity,
   Trophy,
@@ -17,6 +16,9 @@ import {
   Trash2,
   Calendar,
   AlertTriangle,
+  Search,
+  Filter,
+  Crown,
 } from 'lucide-react';
 
 export const AdminDashboardPage: React.FC = () => {
@@ -29,9 +31,11 @@ export const AdminDashboardPage: React.FC = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loadingPlayers, setLoadingPlayers] = useState<boolean>(true);
 
-  // Pending Admin Approvals State (Super Admin Only)
-  const [pendingAdmins, setPendingAdmins] = useState<User[]>([]);
-  const [loadingAdmins, setLoadingAdmins] = useState<boolean>(false);
+  // Pending User Approvals State (Super Admin Only)
+  const [pendingUsers, setPendingUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState<boolean>(false);
+  const [roleFilter, setRoleFilter] = useState<string>('ALL');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Nuke Modal State
   const [nukeModalLevel, setNukeModalLevel] = useState<1 | 2 | 3 | null>(null);
@@ -54,23 +58,23 @@ export const AdminDashboardPage: React.FC = () => {
     }
   };
 
-  const fetchPendingAdmins = async () => {
+  const fetchPendingUsers = async () => {
     if (user?.role !== 'SUPER_ADMIN') return;
     try {
-      setLoadingAdmins(true);
-      const res = await api.get('/auth/pending-admins');
-      setPendingAdmins(res.data.data || []);
+      setLoadingUsers(true);
+      const res = await api.get('/auth/pending-users');
+      setPendingUsers(res.data.data || []);
     } catch (err) {
-      console.error('Failed to fetch pending admins:', err);
+      console.error('Failed to fetch pending users:', err);
     } finally {
-      setLoadingAdmins(false);
+      setLoadingUsers(false);
     }
   };
 
   useEffect(() => {
     fetchPlayers();
     if (user?.role === 'SUPER_ADMIN') {
-      fetchPendingAdmins();
+      fetchPendingUsers();
     }
   }, [user]);
 
@@ -87,13 +91,13 @@ export const AdminDashboardPage: React.FC = () => {
     }
   };
 
-  const handleVerifyAdmin = async (userId: string, approved: boolean) => {
+  const handleVerifyUser = async (userId: string, approved: boolean) => {
     try {
-      await api.patch(`/auth/verify-admin/${userId}`, { approved });
-      setMsg(`Admin account ${approved ? 'approved' : 'rejected'} successfully`);
-      fetchPendingAdmins();
+      await api.patch(`/auth/verify-user/${userId}`, { approved });
+      setMsg(`User account registration ${approved ? 'approved' : 'rejected'} successfully`);
+      fetchPendingUsers();
     } catch (err: any) {
-      setMsg(err.response?.data?.message || 'Admin verification failed');
+      setMsg(err.response?.data?.message || 'User verification failed');
     }
   };
 
@@ -139,12 +143,21 @@ export const AdminDashboardPage: React.FC = () => {
       setAdminPassword('');
       refetchState();
       fetchPlayers();
+      fetchPendingUsers();
     } catch (err: any) {
       setMsg(err.response?.data?.message || 'Reset authorization failed');
     } finally {
       setNuking(false);
     }
   };
+
+  const filteredPendingUsers = pendingUsers.filter((u) => {
+    const matchesRole = roleFilter === 'ALL' || u.role === roleFilter;
+    const matchesSearch =
+      u.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesRole && matchesSearch;
+  });
 
   const phases: { key: Phase; title: string; desc: string; icon: any }[] = [
     { key: 'SETUP', title: 'Phase 1: Setup', desc: 'Configure season rules, categories, budgets', icon: Settings },
@@ -156,19 +169,151 @@ export const AdminDashboardPage: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto py-10 px-6 space-y-8">
       {/* Header */}
-      <div className="flex items-center gap-3 pb-6 border-b border-slate-800">
-        <div className="w-12 h-12 rounded-2xl bg-purple-600/20 text-purple-400 flex items-center justify-center">
-          <Shield className="w-6 h-6" />
+      <div className="flex flex-wrap items-center justify-between pb-6 border-b border-slate-800 gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-purple-600/30">
+            <Crown className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-extrabold text-white">Super Admin Command Center</h1>
+            <p className="text-sm text-slate-400">User Approvals, Global State Machine, Fixtures & Lifecycle Protocols</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-3xl font-extrabold text-white">Super Admin Command Center</h1>
-          <p className="text-sm text-slate-400">Global State Machine controller, fixtures, and lifecycle management</p>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs px-3 py-1.5 rounded-full bg-purple-900/60 text-purple-300 font-mono border border-purple-500/30">
+            Pending User Approvals: {pendingUsers.length}
+          </span>
         </div>
       </div>
 
       {msg && (
-        <div className="p-4 rounded-2xl bg-purple-500/20 border border-purple-500/40 text-purple-300 text-sm font-semibold">
-          {msg}
+        <div className="p-4 rounded-2xl bg-purple-500/20 border border-purple-500/40 text-purple-300 text-sm font-semibold flex items-center justify-between">
+          <span>{msg}</span>
+          <button onClick={() => setMsg(null)} className="text-purple-400 hover:text-white text-xs">
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Super Admin Section: Complete User & Role Registration Approvals */}
+      {user?.role === 'SUPER_ADMIN' && (
+        <div className="glass-card p-8 rounded-3xl border border-purple-500/40 space-y-6 neon-glow">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-black text-white flex items-center gap-2.5">
+                <ShieldAlert className="w-6 h-6 text-purple-400" />
+                <span>Pending User Registration Approvals (Super Admin Only)</span>
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Anyone signing up as Podium Admin, Team Manager, Player, or Spectator requires your approval.
+              </p>
+            </div>
+            <span className="text-xs px-3 py-1 rounded-full bg-purple-900/60 text-purple-300 font-mono">
+              {filteredPendingUsers.length} of {pendingUsers.length} shown
+            </span>
+          </div>
+
+          {/* Filter & Search Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
+            <div className="flex items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-xs">
+              <span className="px-2.5 py-1 text-slate-500 flex items-center gap-1 font-semibold">
+                <Filter className="w-3.5 h-3.5" /> Filter:
+              </span>
+              {['ALL', 'ADMIN', 'TEAM_OWNER', 'PLAYER', 'PUBLIC_GUEST'].map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRoleFilter(r)}
+                  className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                    roleFilter === r
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {r === 'ADMIN' ? 'Podium Admin' : r === 'TEAM_OWNER' ? 'Team Manager' : r === 'PUBLIC_GUEST' ? 'Spectator' : r}
+                </button>
+              ))}
+            </div>
+
+            <div className="relative min-w-[240px]">
+              <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+              <input
+                type="text"
+                placeholder="Search user name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
+              />
+            </div>
+          </div>
+
+          {loadingUsers ? (
+            <div className="py-8 text-center text-slate-400 text-sm">Loading pending registrations...</div>
+          ) : filteredPendingUsers.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-slate-300">
+                <thead className="bg-slate-900/90 text-xs uppercase text-slate-400 border-b border-slate-800">
+                  <tr>
+                    <th className="py-3.5 px-4 font-semibold">Applicant Name</th>
+                    <th className="py-3.5 px-4 font-semibold">Email</th>
+                    <th className="py-3.5 px-4 font-semibold">Requested Role</th>
+                    <th className="py-3.5 px-4 font-semibold">Registered At</th>
+                    <th className="py-3.5 px-4 text-right font-semibold">Super Admin Decision</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800">
+                  {filteredPendingUsers.map((u) => (
+                    <tr key={u.id} className="hover:bg-slate-900/50 transition-colors">
+                      <td className="py-3.5 px-4 font-bold text-white flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center font-mono font-bold text-xs text-purple-400">
+                          {u.fullName.substring(0, 2).toUpperCase()}
+                        </div>
+                        <span>{u.fullName}</span>
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-300 font-mono text-xs">{u.email}</td>
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full border ${
+                            u.role === 'ADMIN'
+                              ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                              : u.role === 'TEAM_OWNER'
+                              ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40'
+                              : u.role === 'PLAYER'
+                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                              : 'bg-pink-500/20 text-pink-300 border-pink-500/40'
+                          }`}
+                        >
+                          {u.role === 'ADMIN' ? 'Podium Admin' : u.role}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-xs text-slate-400">
+                        {new Date(u.createdAt || Date.now()).toLocaleDateString()}
+                      </td>
+                      <td className="py-3.5 px-4 text-right space-x-2">
+                        <button
+                          onClick={() => handleVerifyUser(u.id, true)}
+                          className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all inline-flex items-center gap-1"
+                        >
+                          <Check className="w-3.5 h-3.5" /> Approve
+                        </button>
+                        <button
+                          onClick={() => handleVerifyUser(u.id, false)}
+                          className="px-3.5 py-1.5 rounded-xl bg-red-600/80 hover:bg-red-500 text-white font-bold text-xs transition-all inline-flex items-center gap-1"
+                        >
+                          <X className="w-3.5 h-3.5" /> Reject
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="py-10 text-center text-slate-500 text-sm glass-card rounded-2xl border border-slate-800">
+              <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2 opacity-60" />
+              <span>All user registrations are reviewed. No pending approvals matching your filter.</span>
+            </div>
+          )}
         </div>
       )}
 
@@ -243,71 +388,12 @@ export const AdminDashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Super Admin Section: Pending Admin Approvals */}
-      {user?.role === 'SUPER_ADMIN' && (
-        <div className="glass-card p-8 rounded-3xl border border-purple-500/30 space-y-6 neon-glow">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5 text-purple-400" />
-              <span>Pending Admin Account Approvals</span>
-            </h2>
-            <span className="text-xs px-3 py-1 rounded-full bg-purple-900/60 text-purple-300 font-mono">
-              {pendingAdmins.length} pending
-            </span>
-          </div>
-
-          {loadingAdmins ? (
-            <div className="py-6 text-center text-slate-400 text-sm">Loading pending admin registrations...</div>
-          ) : pendingAdmins.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-300">
-                <thead className="bg-slate-900/90 text-xs uppercase text-slate-400 border-b border-slate-800">
-                  <tr>
-                    <th className="py-3.5 px-4">Full Name</th>
-                    <th className="py-3.5 px-4">Email</th>
-                    <th className="py-3.5 px-4">Requested Role</th>
-                    <th className="py-3.5 px-4 text-right">Super Admin Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {pendingAdmins.map((adm) => (
-                    <tr key={adm.id} className="hover:bg-slate-900/50 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-white">{adm.fullName}</td>
-                      <td className="py-3.5 px-4 text-slate-300">{adm.email}</td>
-                      <td className="py-3.5 px-4 font-mono text-xs text-purple-400 font-bold">{adm.role}</td>
-                      <td className="py-3.5 px-4 text-right space-x-2">
-                        <button
-                          onClick={() => handleVerifyAdmin(adm.id, true)}
-                          className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all inline-flex items-center gap-1"
-                        >
-                          <Check className="w-3.5 h-3.5" /> Approve Admin
-                        </button>
-                        <button
-                          onClick={() => handleVerifyAdmin(adm.id, false)}
-                          className="px-3.5 py-1.5 rounded-xl bg-red-600/80 hover:bg-red-500 text-white font-bold text-xs transition-all inline-flex items-center gap-1"
-                        >
-                          <X className="w-3.5 h-3.5" /> Reject
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="py-8 text-center text-slate-500 text-sm">
-              No pending Admin registrations requiring Super Admin approval.
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Player Profile Verification Section */}
       <div className="glass-card p-8 rounded-3xl border border-slate-800 space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <UserCheck className="w-5 h-5 text-emerald-400" />
-            <span>Player Registration Approvals</span>
+            <span>Player Athlete Registrations (Phase 2)</span>
           </h2>
           <span className="text-xs px-3 py-1 rounded-full bg-slate-800 text-slate-300 font-mono">
             {players.length} Total

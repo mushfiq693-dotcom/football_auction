@@ -1,0 +1,11 @@
+{
+  "name": "football-auction-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:backend": "cd football-auction-backend && npm run dev",
+    "dev:frontend": "cd football-auction-frontend && npm run dev",
+    "build:frontend": "cd football-auction-frontend && npm run build",
+    "build:backend": "cd football-auction-backend && npm run build"
+  }
+}
