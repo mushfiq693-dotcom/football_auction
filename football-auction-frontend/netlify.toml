@@ -1,5 +1,4 @@
 [build]
-  base = "football-auction-frontend"
   publish = "dist"
   command = "npm run build"
 
