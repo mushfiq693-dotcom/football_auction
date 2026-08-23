@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cd football-auction-frontend && npm run build",
-    "dev:backend": "cd football-auction-backend && npm run dev",
-    "dev:frontend": "cd football-auction-frontend && npm run dev",
-    "build:frontend": "cd football-auction-frontend && npm run build",
-    "build:backend": "cd football-auction-backend && npm run build"
+    "build": "npm --prefix football-auction-backend install && npm --prefix football-auction-backend run build",
+    "start": "npm --prefix football-auction-backend start",
+    "dev:backend": "npm --prefix football-auction-backend run dev",
+    "dev:frontend": "npm --prefix football-auction-frontend run dev",
+    "build:frontend": "npm --prefix football-auction-frontend install && npm --prefix football-auction-frontend run build",
+    "build:backend": "npm --prefix football-auction-backend install && npm --prefix football-auction-backend run build"
   }
 }
