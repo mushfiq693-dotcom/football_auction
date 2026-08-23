@@ -1,0 +1,158 @@
+================================================================================
+UNIVERSITY FOOTBALL FRANCHISE & TOURNAMENT PLATFORM
+OFFICIAL PRODUCT REQUIREMENTS & ENTERPRISE IMPLEMENTATION BLUEPRINT
+================================================================================
+
+1. EXECUTIVE SUMMARY & ARCHITECTURE OVERVIEW
+--------------------------------------------------------------------------------
+The University Football Franchise & Tournament Platform is a high-concurrency,
+state-machine governed web application that orchestrates the complete lifecycle
+of a university football franchise league.
+
+System Modules:
+  1. Module 1: Event Configuration & Dynamic Player Registration
+  2. Module 2: Real-Time Auction Engine (Normal & Blind Sealed-Bid Modes)
+  3. Module 3: Football Tournament Management (Matches, Two-Legged Aggregates, Standings, Player Stats)
+  4. Module 4: The 3-Level "Lifecycle Reset" (Nuke Protocols with Cloudinary Cleanup)
+
+Technology Stack Constraints:
+  • Backend: Node.js + Express + TypeScript + Prisma ORM + PostgreSQL / SQLite
+  • Frontend: React + Vite + TypeScript + Tailwind CSS + Lucide Icons (SPA)
+  • Real-Time Transport: Socket.IO (Event-driven streaming, zero HTTP polling)
+  • Media Storage: Cloudinary (Cloud-first with automatic orphaned asset deletion)
+
+
+2. THE GLOBAL STATE MACHINE (4 SYSTEM PHASES)
+--------------------------------------------------------------------------------
+The application is governed by a strict global state machine enforced across all
+backend API routes (via PhaseGuardMiddleware) and frontend views:
+
+  • PHASE 1: SETUP (Pre-Event)
+    - Super Admin configures dynamic event rules: total budget allowance, player
+      categories/tiers, percentage-based raise tiers, squad min/max sizes,
+      academic sessions, and franchise teams.
+    - Public view: Pre-season launch hub and franchise information.
+    - API access: Only admin configuration endpoints open. Registration & Auction locked.
+
+  • PHASE 2: PLAYER REGISTRATION
+    - Registration portal is open for student footballers.
+    - Fields: Full Name, Student ID, Academic Session (dynamic), Jersey Name,
+      Primary Position (exactly 1 required), Secondary Positions (optional multi-select),
+      and Cloudinary profile photo.
+    - Players can update profile and withdraw while phase is active.
+    - Admins review, verify, and assign base price tiers.
+
+  • PHASE 3: THE LIVE AUCTION
+    - Registration strictly freezes. Socket.IO bidding rooms open.
+    - Public landing page dynamically shifts to the Live Podium View / Spectator Ledger.
+    - Podium Admin conducts live bidding in Normal and Blind (Sealed-Bid) modes.
+    - Strict mathematical budget guardrails block invalid bids in real-time.
+
+  • PHASE 4: THE LIVE TOURNAMENT
+    - Auction endpoints are permanently locked.
+    - Sockets switch to live match score broadcasts and instant standings updates.
+    - Landing page shifts to Tournament Match Center, Points Table, and Golden Boot stats.
+
+
+3. MODULE 1: DYNAMIC EVENT RULES & PLAYER PORTAL
+--------------------------------------------------------------------------------
+A. Dynamic Event Rules (Zero Hardcoding):
+   - Total Budget Allowance: Uniform purse applied to all franchise teams.
+   - Categories & Tiers: Dynamic tiers (e.g. Platinum Elite, Gold Pro, Silver Challenger)
+     each with configurable Base Prices and Min Bid Increments.
+   - Dynamic Bidding Math: Percentage-based raise tiers configured by Super Admin:
+     * Tier 1 (e.g. 0% - 5% of Budget): Min increment = 0.25% of budget
+     * Tier 2 (e.g. 5% - 20% of Budget): Min increment = 1.00% of budget
+     * Tier 3 (e.g. >20% of Budget): Min increment = 2.50% of budget
+     Backend calculates exact monetary increments and serves them to the UI.
+
+B. Player Registration Portal & Constraints:
+   - Required Data: Full Name, Student ID, Academic Session, Jersey Name,
+     Primary Position (GK, CB, LB, RB, CDM, CM, CAM, RW, LW, ST - exactly 1 primary),
+     Secondary Positions (multi-select).
+   - Cloudinary Media Constraint: Player profile images are uploaded directly to
+     Cloudinary cloud storage. Local server storage is forbidden.
+
+
+4. MODULE 2: REAL-TIME AUCTION ENGINE & CONCURRENCY CRUCIBLE
+--------------------------------------------------------------------------------
+A. Podium Mechanics:
+   - Podium Admin pulls players from the "Unsold Pool" to the live stage.
+   - Normal Mode: Open incremental bidding. Server-authoritative countdown timer
+     (e.g., 20s/30s) resets upon each valid bid with anti-sniping extension.
+   - Blind Mode: Sealed envelope bids. The countdown timer runs down to zero.
+     Franchise managers submit 1 hidden monetary bid. At T=0, all envelopes are
+     unsealed simultaneously, validated against team purses, and highest bid wins.
+   - Admin Overrides: Pause, Resume, Rollback last bid, Pass to Unsold, Force Hammer Sale.
+
+B. Mathematical Budget Guardrails (Backend Validation):
+   The backend mathematically blocks any bid that prevents a team from filling
+   their minimum roster slots with remaining lowest base-price players:
+     Current_Purse - Bid_Amount >= (Min_Roster - (Current_Players_Count + 1)) * Min_Base_Price_In_System
+
+C. Concurrency Crucible (Zero-Polling & Race Condition Prevention):
+   - Heavy HTTP polling is strictly forbidden.
+   - Socket.IO broadcasts timer ticks, bid submissions, lot transfers, and hammer sales.
+   - Backend utilizes serialized database transactions (`prisma.$transaction`) with
+     atomic wallet deductions to eliminate race conditions and double-spending.
+
+
+5. MODULE 3: FOOTBALL TOURNAMENT MANAGEMENT & STANDINGS
+--------------------------------------------------------------------------------
+A. Match Fixture Management:
+   - Super Admin generates tournament fixtures (Team A vs Team B, Date/Time, Venue).
+   - "Two-Legged" Toggle: Support for single matches and two-legged fixtures
+     (Leg 1 Home/Away + Leg 2 Reverse Home/Away).
+   - Aggregate Score Calculation: Database schema tracks Leg 1 & Leg 2 and computes
+     aggregate scorelines (e.g. Team A 3 - 2 Team B on aggregate).
+   - Live Score Tracking: Admins record goals, cards, and match status with instant
+     Socket.IO broadcasting to Spectator views.
+
+B. Automated Points Table:
+   - Metrics: Matches Played (MP), Won (3 pts), Drawn (1 pt), Lost (0 pts),
+     Goals For (GF), Goals Against (GA), Goal Difference (GD), Total Points.
+   - Tie-breaking: Sorted by Points (DESC) -> Goal Difference (DESC) -> Goals For (DESC).
+
+C. Individual Player Statistics:
+   - Track Goals, Assists, Clean Sheets (GK/Defenders with 0 conceded in completed matches),
+     Yellow Cards, Red Cards.
+   - Leaderboards: Golden Boot (Top Scorers), Playmaker (Top Assists), Golden Glove (Clean Sheets),
+     and Discipline Card Ledger.
+
+
+6. MODULE 4: THE 3-LEVEL "LIFECYCLE RESET" (NUKE PROTOCOLS)
+--------------------------------------------------------------------------------
+Super Admin possesses three irreversible reset protocols with mandatory Cloudinary
+orphan asset elimination:
+
+  • Level 1 (Tournament Wipe):
+    - Deletes all match fixtures, match legs, player match stats, points tables, and news.
+    - Retains all drafted rosters, team wallets, and auction records.
+    - Reverts global state back to the exact moment the auction ended (Phase 3/4).
+
+  • Level 2 (Roster Wipe):
+    - Deletes all players, teams, franchise owners, team wallets, and auction ledgers.
+    - Triggers Cloudinary API calls to delete all player image assets from cloud storage.
+    - Retains all event rules (Academic sessions, player categories, bidding math).
+    - Reverts system back to clean Pre-Registration state (Phase 1: SETUP).
+
+  • Level 3 (Factory Reset):
+    - Completely drops all tables, season data, rules, matches, and teams.
+    - Wipes all cloud media assets from Cloudinary.
+    - Preserves ONLY Super Admin credentials and seeds fresh default Season 2026.
+    - Reverts system to Phase 1: SETUP.
+
+
+7. DATA MODEL BLUEPRINT (PRISMA SCHEMA OVERVIEW)
+--------------------------------------------------------------------------------
+Core Entities:
+  - `User`: Roles (SUPER_ADMIN, PODIUM_ADMIN, TEAM_OWNER, PLAYER, PUBLIC_GUEST)
+  - `GlobalState`: Active Phase (SETUP, PLAYER_REGISTRATION, LIVE_AUCTION, LIVE_TOURNAMENT)
+  - `Season`: Year, Total Budget, Min/Max Roster sizes, Dynamic Tiers
+  - `PlayerCategory`: Tier Name, Base Price, Min Bid Increment
+  - `Player`: Student ID, Jersey Name, Primary Position, Secondary Positions, Cloudinary Photo URL & Public ID
+  - `Team` & `TeamWallet`: Total Budget, Remaining Purse, Spent Amount, Acquired Roster
+  - `AuctionSession` & `AuctionBid`: Mode (NORMAL / BLIND), Lot Status, Timer, Bid History, Envelope Bids
+  - `Tournament`, `Match`, `MatchLeg`, `PlayerPerformance`, `Standings`
+  - `News` & `AuditLog`
+===============================================================================
