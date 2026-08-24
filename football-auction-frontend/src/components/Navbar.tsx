@@ -148,36 +148,39 @@ export const Navbar: React.FC = () => {
           </div>
         </Link>
 
-        {/* Center / Navigation Links (Desktop) */}
-        <div className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-300">
+        {/* Center / Navigation Pill Buttons (Desktop) */}
+        <div className="hidden lg:flex items-center gap-3 text-xs font-black uppercase tracking-wider">
           <Link
             to="/roster"
-            className={`px-3.5 py-1.5 rounded-xl transition-all ${
+            className={`btn-shine flex items-center gap-2 px-4 py-2 rounded-2xl transition-all cursor-pointer group shadow-lg ${
               isActiveRoute('/roster')
-                ? 'text-cyan-300 bg-cyan-950/50 border border-cyan-500/40 shadow-sm'
-                : 'text-slate-300 hover:text-white hover:bg-slate-900/60'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-emerald-500/40 ring-2 ring-emerald-400 font-black'
+                : 'bg-slate-900/80 hover:bg-slate-800/90 text-slate-200 hover:text-white border border-emerald-500/30 hover:border-emerald-400/60 shadow-emerald-500/10'
             }`}
           >
-            Players
+            <Users className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
+            <span>Players & Roster</span>
           </Link>
+
           <Link
             to="/tournament"
-            className={`px-3.5 py-1.5 rounded-xl transition-all ${
+            className={`btn-shine flex items-center gap-2 px-4 py-2 rounded-2xl transition-all cursor-pointer group shadow-lg ${
               isActiveRoute('/tournament')
-                ? 'text-cyan-300 bg-cyan-950/50 border border-cyan-500/40 shadow-sm'
-                : 'text-slate-300 hover:text-white hover:bg-slate-900/60'
+                ? 'bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 shadow-amber-500/40 ring-2 ring-amber-300 font-black'
+                : 'bg-slate-900/80 hover:bg-slate-800/90 text-slate-200 hover:text-white border border-amber-500/30 hover:border-amber-400/60 shadow-amber-500/10'
             }`}
           >
-            Tournament & News
+            <Trophy className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+            <span>Tournament & News</span>
           </Link>
 
           {activePhase === 'PLAYER_REGISTRATION' && (
             <Link
               to="/player/dashboard"
-              className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30"
+              className="btn-shine text-emerald-300 hover:text-white flex items-center gap-1.5 text-xs font-black px-4 py-2 rounded-2xl bg-emerald-950/60 border border-emerald-500/40 shadow-lg shadow-emerald-500/20"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              Player Profile & Card
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Player Card</span>
             </Link>
           )}
         </div>
