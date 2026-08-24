@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { FUTPlayerCard } from '../components/FUTPlayerCard';
@@ -17,14 +17,17 @@ import {
   Hash,
   CreditCard,
   Calendar,
-  Image as ImageIcon,
+  UploadCloud,
   Check,
+  X,
+  FileImage,
 } from 'lucide-react';
 
 export const PlayerDashboardPage: React.FC = () => {
   const { user } = useAuth();
   const [, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
+  const [uploading, setUploading] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -37,7 +40,11 @@ export const PlayerDashboardPage: React.FC = () => {
   const [position, setPosition] = useState<Position>('FORWARD');
   const [secondaryPosition, setSecondaryPosition] = useState<string>('');
   const [photoUrl, setPhotoUrl] = useState<string>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [existingPlayer, setExistingPlayer] = useState<Player | null>(null);
+  const [isDragOver, setIsDragOver] = useState<boolean>(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Sample avatar presets for quick 1-click photo testing
   const sampleAvatars = [
@@ -134,6 +141,44 @@ export const PlayerDashboardPage: React.FC = () => {
     loadPlayerData();
   }, [user]);
 
+  // Handle direct file selection
+  const handleFileChange = (file: File) => {
+    setErrorMessage(null);
+    const maxSize = 10 * 1024 * 1024; // 10MB
+
+    if (!file.type.startsWith('image/')) {
+      setErrorMessage('Please select a valid image file (JPG, PNG, WEBP).');
+      return;
+    }
+
+    if (file.size > maxSize) {
+      setErrorMessage('File size exceeds 10MB limit. Please choose a smaller photo.');
+      return;
+    }
+
+    setSelectedFile(file);
+    // Instant local preview for 3D card
+    const localUrl = URL.createObjectURL(file);
+    setPhotoUrl(localUrl);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileChange(e.dataTransfer.files[0]);
+    }
+  };
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -141,6 +186,30 @@ export const PlayerDashboardPage: React.FC = () => {
     setErrorMessage(null);
 
     try {
+      let finalPhotoUrl = photoUrl;
+
+      // If a new local file was selected, upload it first to backend
+      if (selectedFile) {
+        setUploading(true);
+        const formData = new FormData();
+        formData.append('image', selectedFile);
+
+        try {
+          const uploadRes = await api.post('/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          if (uploadRes.data?.data?.url) {
+            finalPhotoUrl = uploadRes.data.data.url;
+            setPhotoUrl(finalPhotoUrl);
+          }
+        } catch (uploadErr: any) {
+          console.warn('Backend file upload fallback:', uploadErr);
+          // If direct upload fails, keep current image
+        } finally {
+          setUploading(false);
+        }
+      }
+
       const payload = {
         fullName,
         studentId,
@@ -149,12 +218,13 @@ export const PlayerDashboardPage: React.FC = () => {
         jerseyNumber: parseInt(jerseyNumber, 10) || 10,
         position,
         secondaryPosition: secondaryPosition || undefined,
-        photoUrl: photoUrl || undefined,
+        photoUrl: finalPhotoUrl || undefined,
       };
 
       const res = await api.post('/players/register', payload);
       setExistingPlayer(res.data.data);
-      setSuccessMessage('🎉 Player profile & 3D FUT Card updated successfully!');
+      setSelectedFile(null);
+      setSuccessMessage('🎉 Player profile & 3D FUT Card saved successfully!');
       setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err: any) {
       setErrorMessage(err.response?.data?.message || 'Failed to save player profile.');
@@ -204,7 +274,7 @@ export const PlayerDashboardPage: React.FC = () => {
             Player Dashboard & <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">FUT Card Creator</span>
           </h1>
           <p className="text-sm text-slate-400 mt-2 max-w-2xl">
-            Build your high-resolution holographic player card, customize your on-pitch positions, and broadcast live to auction managers.
+            Build your high-resolution holographic player card, upload your photo, customize your on-pitch positions, and broadcast live to auction managers.
           </p>
         </div>
 
@@ -421,45 +491,103 @@ export const PlayerDashboardPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Photo URL & Sample Avatars */}
+            {/* Direct Image Upload (Drag and Drop / File Picker < 10MB) */}
             <div className="space-y-3">
-              <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                <ImageIcon className="w-3.5 h-3.5 text-purple-400" />
-                Player Photo URL (Cloudinary / Direct Link)
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <UploadCloud className="w-4 h-4 text-purple-400" />
+                  Direct Photo Upload (Less than 10MB)
+                </label>
+                <span className="text-[10px] text-purple-300 font-mono">PNG, JPG, WEBP (&lt; 10MB)</span>
+              </div>
 
-              <div className="relative">
-                <input
-                  type="url"
-                  value={photoUrl}
-                  onChange={(e) => setPhotoUrl(e.target.value)}
-                  placeholder="https://res.cloudinary.com/... or paste image URL"
-                  className="w-full px-4 py-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 text-white text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all font-mono placeholder:text-slate-600 shadow-inner"
-                />
+              {/* Hidden File Input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png, image/jpeg, image/jpg, image/webp"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleFileChange(e.target.files[0]);
+                  }
+                }}
+                className="hidden"
+              />
+
+              {/* Dropzone Container */}
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`p-6 rounded-2xl border-2 border-dashed transition-all duration-200 text-center cursor-pointer flex flex-col items-center justify-center gap-3 relative ${
+                  isDragOver
+                    ? 'border-purple-400 bg-purple-950/40 shadow-xl shadow-purple-500/20 scale-[1.01]'
+                    : photoUrl
+                    ? 'border-purple-500/40 bg-slate-900/70 hover:border-purple-400/70'
+                    : 'border-slate-700 hover:border-purple-500/60 bg-slate-900/50 hover:bg-slate-900/80'
+                }`}
+              >
+                {photoUrl ? (
+                  <div className="flex items-center gap-4 w-full">
+                    <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-purple-500/40 shadow-lg flex-shrink-0">
+                      <img src={photoUrl} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="text-left flex-1 truncate">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                        <FileImage className="w-4 h-4 text-purple-400" />
+                        <span className="truncate">{selectedFile?.name || 'Player Profile Picture'}</span>
+                      </div>
+                      <span className="text-[11px] text-slate-400 block mt-0.5 font-mono">
+                        {selectedFile ? `${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB` : 'Active Image'}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedFile(null);
+                        setPhotoUrl('');
+                      }}
+                      className="p-2 rounded-xl bg-red-950/40 hover:bg-red-900/60 border border-red-800/40 text-red-400 transition-colors"
+                      title="Remove image"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="w-14 h-14 rounded-2xl bg-purple-600/20 text-purple-300 flex items-center justify-center shadow-lg shadow-purple-600/10">
+                      <UploadCloud className="w-7 h-7" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white">
+                        Click to browse or drag & drop photo here
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        High resolution football portraits supported up to 10MB
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Sample Photo Presets */}
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="text-[11px] font-semibold text-slate-400">Quick Demo Avatars:</span>
+                <span className="text-[11px] font-semibold text-slate-400">Or use instant demo portrait:</span>
                 {sampleAvatars.map((av, idx) => (
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setPhotoUrl(av.url)}
+                    onClick={() => {
+                      setSelectedFile(null);
+                      setPhotoUrl(av.url);
+                    }}
                     className="px-3 py-1 rounded-xl bg-slate-800/80 hover:bg-purple-600/30 border border-slate-700 hover:border-purple-500/50 text-[11px] font-bold text-slate-300 hover:text-purple-200 transition-all"
                   >
                     {av.label}
                   </button>
                 ))}
-                {photoUrl && (
-                  <button
-                    type="button"
-                    onClick={() => setPhotoUrl('')}
-                    className="px-2.5 py-1 rounded-xl bg-red-950/40 border border-red-800/50 text-[11px] text-red-300 hover:bg-red-900/40 transition-colors"
-                  >
-                    Clear
-                  </button>
-                )}
               </div>
             </div>
 
@@ -467,15 +595,20 @@ export const PlayerDashboardPage: React.FC = () => {
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={saving}
+                disabled={saving || uploading}
                 className="w-full group relative py-4 px-6 rounded-2xl font-black text-sm uppercase tracking-wider text-white shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden disabled:opacity-50 active:scale-[0.98] bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 shadow-purple-600/40 hover:shadow-purple-600/60"
               >
-                {/* Button Light Sweep Reflection */}
                 <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full duration-1000 bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform pointer-events-none" />
 
                 <div className="relative flex items-center justify-center gap-2.5">
                   <Save className="w-5 h-5 transition-transform group-hover:scale-110" />
-                  <span>{saving ? 'Saving Player Profile...' : 'Save & Broadcast FUT Card'}</span>
+                  <span>
+                    {uploading
+                      ? 'Uploading Image (Less than 10MB)...'
+                      : saving
+                      ? 'Saving Player Profile...'
+                      : 'Save & Broadcast FUT Card'}
+                  </span>
                   <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
                 </div>
               </button>
