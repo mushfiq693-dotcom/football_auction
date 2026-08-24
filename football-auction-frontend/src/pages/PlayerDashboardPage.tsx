@@ -13,6 +13,12 @@ import {
   Sparkles,
   Zap,
   Radio,
+  ChevronDown,
+  Hash,
+  CreditCard,
+  Calendar,
+  Image as ImageIcon,
+  Check,
 } from 'lucide-react';
 
 export const PlayerDashboardPage: React.FC = () => {
@@ -33,6 +39,73 @@ export const PlayerDashboardPage: React.FC = () => {
   const [photoUrl, setPhotoUrl] = useState<string>('');
   const [existingPlayer, setExistingPlayer] = useState<Player | null>(null);
 
+  // Sample avatar presets for quick 1-click photo testing
+  const sampleAvatars = [
+    {
+      label: 'Striker',
+      url: 'https://images.unsplash.com/photo-1570498839593-e565b3d7f672?w=400&auto=format&fit=crop&q=80',
+    },
+    {
+      label: 'Midfielder',
+      url: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=400&auto=format&fit=crop&q=80',
+    },
+    {
+      label: 'Defender',
+      url: 'https://images.unsplash.com/photo-1560253023-3ec5d502959f?w=400&auto=format&fit=crop&q=80',
+    },
+    {
+      label: 'Goalkeeper',
+      url: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=400&auto=format&fit=crop&q=80',
+    },
+  ];
+
+  const positionOptions: {
+    id: Position;
+    title: string;
+    sub: string;
+    icon: string;
+    color: string;
+    activeBorder: string;
+    activeBg: string;
+  }[] = [
+    {
+      id: 'FORWARD',
+      title: 'FORWARD',
+      sub: 'ST / CF / RW / LW',
+      icon: '⚽',
+      color: 'text-rose-400',
+      activeBorder: 'border-rose-500 shadow-lg shadow-rose-500/20',
+      activeBg: 'bg-rose-500/15 text-white',
+    },
+    {
+      id: 'MIDFIELDER',
+      title: 'MIDFIELDER',
+      sub: 'CAM / CM / CDM',
+      icon: '🎯',
+      color: 'text-purple-400',
+      activeBorder: 'border-purple-500 shadow-lg shadow-purple-500/20',
+      activeBg: 'bg-purple-500/15 text-white',
+    },
+    {
+      id: 'DEFENDER',
+      title: 'DEFENDER',
+      sub: 'CB / LB / RB',
+      icon: '🛡️',
+      color: 'text-blue-400',
+      activeBorder: 'border-blue-500 shadow-lg shadow-blue-500/20',
+      activeBg: 'bg-blue-500/15 text-white',
+    },
+    {
+      id: 'GOALKEEPER',
+      title: 'GOALKEEPER',
+      sub: 'GK / Shot Stopper',
+      icon: '🧤',
+      color: 'text-emerald-400',
+      activeBorder: 'border-emerald-500 shadow-lg shadow-emerald-500/20',
+      activeBg: 'bg-emerald-500/15 text-white',
+    },
+  ];
+
   useEffect(() => {
     async function loadPlayerData() {
       try {
@@ -51,7 +124,6 @@ export const PlayerDashboardPage: React.FC = () => {
           setPhotoUrl(p.photoUrl || '');
         }
       } catch (err: any) {
-        // If not found yet, initialize with defaults
         if (user) {
           setFullName(user.fullName || '');
         }
@@ -82,7 +154,7 @@ export const PlayerDashboardPage: React.FC = () => {
 
       const res = await api.post('/players/register', payload);
       setExistingPlayer(res.data.data);
-      setSuccessMessage('🎉 Player profile & FUT Card updated successfully!');
+      setSuccessMessage('🎉 Player profile & 3D FUT Card updated successfully!');
       setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err: any) {
       setErrorMessage(err.response?.data?.message || 'Failed to save player profile.');
@@ -124,23 +196,25 @@ export const PlayerDashboardPage: React.FC = () => {
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-800">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-950/80 border border-purple-500/30 text-purple-300 text-xs font-bold uppercase tracking-wider mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-purple-900/60 to-indigo-900/60 border border-purple-500/40 text-purple-300 text-xs font-bold uppercase tracking-wider mb-3 shadow-lg shadow-purple-900/20">
+            <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
             Official Player Hub
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+          <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight">
             Player Dashboard & <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">FUT Card Creator</span>
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Build your holographic player card, customize your position, and track live auction status.
+          <p className="text-sm text-slate-400 mt-2 max-w-2xl">
+            Build your high-resolution holographic player card, customize your on-pitch positions, and broadcast live to auction managers.
           </p>
         </div>
 
         {existingPlayer?.isSold && existingPlayer?.team && (
-          <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-950/80 to-slate-900 border border-emerald-500/40">
-            <Trophy className="w-8 h-8 text-emerald-400" />
+          <div className="flex items-center gap-3.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/90 to-slate-900 border border-emerald-500/50 shadow-xl shadow-emerald-950/40">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <Trophy className="w-6 h-6" />
+            </div>
             <div>
-              <span className="text-[10px] uppercase font-bold text-emerald-400 block tracking-wider">
+              <span className="text-[10px] uppercase font-extrabold text-emerald-400 block tracking-widest">
                 DRAFTED TO FRANCHISE
               </span>
               <span className="text-base font-black text-white">
@@ -154,166 +228,271 @@ export const PlayerDashboardPage: React.FC = () => {
       {/* Main Grid: Form Left, 3D FUT Card Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
         {/* Profile Creator Form (7 cols) */}
-        <div className="lg:col-span-7 glass-card p-8 rounded-3xl border border-slate-800 space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
-                <User className="w-5 h-5" />
+        <div className="lg:col-span-7 glass-card p-8 md:p-10 rounded-3xl border border-slate-800/80 shadow-2xl space-y-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="flex items-center justify-between pb-5 border-b border-slate-800">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30">
+                <User className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Player Details & Media</h3>
-                <p className="text-xs text-slate-400">Card details update live on the right as you type.</p>
+                <h3 className="text-xl font-black text-white tracking-tight">Player Details & Media</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Card details update live on the right as you customize.</p>
               </div>
             </div>
           </div>
 
           {successMessage && (
-            <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-sm font-semibold flex items-center gap-3 animate-fade-in">
-              <CheckCircle className="w-5 h-5 flex-shrink-0" />
+            <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-sm font-bold flex items-center gap-3 animate-fade-in shadow-lg shadow-emerald-500/10">
+              <CheckCircle className="w-5 h-5 flex-shrink-0 text-emerald-400" />
               <span>{successMessage}</span>
             </div>
           )}
 
           {errorMessage && (
-            <div className="p-4 rounded-2xl bg-red-500/20 border border-red-500/40 text-red-300 text-sm font-semibold flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <div className="p-4 rounded-2xl bg-red-500/20 border border-red-500/50 text-red-300 text-sm font-bold flex items-center gap-3 shadow-lg shadow-red-500/10">
+              <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-400" />
               <span>{errorMessage}</span>
             </div>
           )}
 
-          <form onSubmit={handleSaveProfile} className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={handleSaveProfile} className="space-y-6">
+            {/* Full Name & Jersey Name */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-2">
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                  <User className="w-3.5 h-3.5 text-purple-400" />
                   Full Name
                 </label>
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Mushfiqur Rahman"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-purple-500"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="e.g. Mushfiqur Rahman"
+                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 text-white text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all placeholder:text-slate-600 shadow-inner"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-2">
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                  <Hash className="w-3.5 h-3.5 text-purple-400" />
                   Jersey Name (Card Title)
                 </label>
-                <input
-                  type="text"
-                  value={jerseyName}
-                  onChange={(e) => setJerseyName(e.target.value)}
-                  placeholder="e.g. MUSHFIQ"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm uppercase focus:outline-none focus:border-purple-500 font-mono"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={jerseyName}
+                    onChange={(e) => setJerseyName(e.target.value)}
+                    placeholder="e.g. MUSHFIQ"
+                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 text-white text-sm uppercase focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all placeholder:text-slate-600 font-mono shadow-inner"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Student ID & Academic Session */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-2">
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                  <CreditCard className="w-3.5 h-3.5 text-purple-400" />
                   Student ID
                 </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    value={studentId}
+                    onChange={(e) => setStudentId(e.target.value)}
+                    placeholder="e.g. 2020331001"
+                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 text-white text-sm font-mono focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all placeholder:text-slate-600 shadow-inner"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                  <Calendar className="w-3.5 h-3.5 text-purple-400" />
+                  Academic Session
+                </label>
+                <div className="relative">
+                  <select
+                    value={academicSession}
+                    onChange={(e) => setAcademicSession(e.target.value)}
+                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 text-white text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none cursor-pointer pr-10 shadow-inner"
+                  >
+                    <option value="2021-2022">Session 2021-2022</option>
+                    <option value="2022-2023">Session 2022-2023</option>
+                    <option value="2023-2024">Session 2023-2024</option>
+                    <option value="2024-2025">Session 2024-2025</option>
+                    <option value="2025-2026">Session 2025-2026</option>
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-slate-400 absolute right-4 top-4 pointer-events-none" />
+                </div>
+              </div>
+            </div>
+
+            {/* Primary Position Interactive Pill Buttons */}
+            <div>
+              <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between mb-3">
+                <span className="flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  Primary Position (Select One)
+                </span>
+                <span className="text-[10px] text-purple-400 font-mono font-normal">Required for Auction</span>
+              </label>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {positionOptions.map((opt) => {
+                  const isSelected = position === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setPosition(opt.id)}
+                      className={`p-3.5 rounded-2xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between ${
+                        isSelected
+                          ? `${opt.activeBorder} ${opt.activeBg}`
+                          : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900/90 text-slate-400'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xl">{opt.icon}</span>
+                        {isSelected && (
+                          <div className="w-5 h-5 rounded-full bg-purple-600 flex items-center justify-center shadow-md shadow-purple-600/40">
+                            <Check className="w-3 h-3 text-white stroke-[3]" />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <span className={`text-xs font-black block ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+                          {opt.title}
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
+                          {opt.sub}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Secondary Position & Jersey Number */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                  <Shield className="w-3.5 h-3.5 text-slate-400" />
+                  Secondary Position (Optional)
+                </label>
+                <div className="relative">
+                  <select
+                    value={secondaryPosition}
+                    onChange={(e) => setSecondaryPosition(e.target.value)}
+                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 text-white text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none cursor-pointer pr-10 shadow-inner"
+                  >
+                    <option value="">None (Single Position)</option>
+                    <option value="FORWARD">FORWARD (Attacker / Winger)</option>
+                    <option value="MIDFIELDER">MIDFIELDER (Playmaker / Box-to-Box)</option>
+                    <option value="DEFENDER">DEFENDER (Centerback / Fullback)</option>
+                    <option value="GOALKEEPER">GOALKEEPER (Keeper)</option>
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-slate-400 absolute right-4 top-4 pointer-events-none" />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                  <Hash className="w-3.5 h-3.5 text-slate-400" />
+                  Jersey Number
+                </label>
                 <input
-                  type="text"
-                  required
-                  value={studentId}
-                  onChange={(e) => setStudentId(e.target.value)}
-                  placeholder="e.g. 2020331001"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono focus:outline-none focus:border-purple-500"
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={jerseyNumber}
+                  onChange={(e) => setJerseyNumber(e.target.value)}
+                  placeholder="e.g. 10"
+                  className="w-full px-4 py-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 text-white text-sm font-mono focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all placeholder:text-slate-600 shadow-inner"
+                />
+              </div>
+            </div>
+
+            {/* Photo URL & Sample Avatars */}
+            <div className="space-y-3">
+              <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-purple-400" />
+                Player Photo URL (Cloudinary / Direct Link)
+              </label>
+
+              <div className="relative">
+                <input
+                  type="url"
+                  value={photoUrl}
+                  onChange={(e) => setPhotoUrl(e.target.value)}
+                  placeholder="https://res.cloudinary.com/... or paste image URL"
+                  className="w-full px-4 py-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 text-white text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all font-mono placeholder:text-slate-600 shadow-inner"
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-2">
-                  Academic Session
-                </label>
-                <select
-                  value={academicSession}
-                  onChange={(e) => setAcademicSession(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-purple-500"
-                >
-                  <option value="2021-2022">2021-2022</option>
-                  <option value="2022-2023">2022-2023</option>
-                  <option value="2023-2024">2023-2024</option>
-                  <option value="2024-2025">2024-2025</option>
-                  <option value="2025-2026">2025-2026</option>
-                </select>
+              {/* Sample Photo Presets */}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="text-[11px] font-semibold text-slate-400">Quick Demo Avatars:</span>
+                {sampleAvatars.map((av, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setPhotoUrl(av.url)}
+                    className="px-3 py-1 rounded-xl bg-slate-800/80 hover:bg-purple-600/30 border border-slate-700 hover:border-purple-500/50 text-[11px] font-bold text-slate-300 hover:text-purple-200 transition-all"
+                  >
+                    {av.label}
+                  </button>
+                ))}
+                {photoUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setPhotoUrl('')}
+                    className="px-2.5 py-1 rounded-xl bg-red-950/40 border border-red-800/50 text-[11px] text-red-300 hover:bg-red-900/40 transition-colors"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-2">
-                  Primary Position (Required)
-                </label>
-                <select
-                  value={position}
-                  onChange={(e) => setPosition(e.target.value as Position)}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-purple-500 font-bold"
-                >
-                  <option value="FORWARD">FORWARD (ST / CF / RW / LW)</option>
-                  <option value="MIDFIELDER">MIDFIELDER (CAM / CM / CDM)</option>
-                  <option value="DEFENDER">DEFENDER (CB / LB / RB)</option>
-                  <option value="GOALKEEPER">GOALKEEPER (GK)</option>
-                </select>
-              </div>
+            {/* Ultra-Stunning CTA Submit Button */}
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={saving}
+                className="w-full group relative py-4 px-6 rounded-2xl font-black text-sm uppercase tracking-wider text-white shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden disabled:opacity-50 active:scale-[0.98] bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 shadow-purple-600/40 hover:shadow-purple-600/60"
+              >
+                {/* Button Light Sweep Reflection */}
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full duration-1000 bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform pointer-events-none" />
 
-              <div>
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-2">
-                  Secondary Position (Optional)
-                </label>
-                <select
-                  value={secondaryPosition}
-                  onChange={(e) => setSecondaryPosition(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-purple-500"
-                >
-                  <option value="">None</option>
-                  <option value="FORWARD">FORWARD</option>
-                  <option value="MIDFIELDER">MIDFIELDER</option>
-                  <option value="DEFENDER">DEFENDER</option>
-                  <option value="GOALKEEPER">GOALKEEPER</option>
-                </select>
-              </div>
+                <div className="relative flex items-center justify-center gap-2.5">
+                  <Save className="w-5 h-5 transition-transform group-hover:scale-110" />
+                  <span>{saving ? 'Saving Player Profile...' : 'Save & Broadcast FUT Card'}</span>
+                  <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
+                </div>
+              </button>
             </div>
-
-            <div>
-              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-2">
-                Photo URL / Cloudinary Image Link
-              </label>
-              <input
-                type="url"
-                value={photoUrl}
-                onChange={(e) => setPhotoUrl(e.target.value)}
-                placeholder="https://res.cloudinary.com/..."
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-purple-500 font-mono"
-              />
-              <span className="text-[11px] text-slate-500 mt-1 block">
-                Provide a direct photo URL. Photo will appear with glowing cutout on your 3D card.
-              </span>
-            </div>
-
-            <button
-              type="submit"
-              disabled={saving}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold text-sm shadow-xl shadow-purple-600/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              <Save className="w-4 h-4" />
-              {saving ? 'Saving Player Card...' : 'Save & Broadcast FUT Card'}
-            </button>
           </form>
         </div>
 
         {/* 3D Holographic FUT Card Live Preview (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col items-center justify-center space-y-4">
-          <div className="text-center mb-2">
-            <span className="text-xs font-extrabold uppercase tracking-widest text-purple-400 flex items-center justify-center gap-1.5">
-              <Zap className="w-4 h-4 text-purple-400" />
+        <div className="lg:col-span-5 flex flex-col items-center justify-center space-y-5 lg:sticky lg:top-24">
+          <div className="text-center">
+            <span className="text-xs font-black uppercase tracking-widest text-purple-400 flex items-center justify-center gap-2">
+              <Zap className="w-4 h-4 text-purple-400 animate-pulse" />
               Live 3D Holographic Card Preview
             </span>
-            <p className="text-xs text-slate-400 mt-0.5">Move mouse over card for 3D tilt & reflection</p>
+            <p className="text-xs text-slate-400 mt-1">
+              Hover & move mouse over card to inspect 3D tilt & reflection
+            </p>
           </div>
 
           <FUTPlayerCard
@@ -323,14 +502,14 @@ export const PlayerDashboardPage: React.FC = () => {
             className="neon-glow-platinum"
           />
 
-          <div className="w-full max-w-[320px] p-4 rounded-2xl bg-slate-900/90 border border-slate-800 text-center space-y-1 text-xs text-slate-400">
+          <div className="w-full max-w-[340px] p-4 rounded-2xl glass-card border border-slate-800 text-center space-y-2 text-xs text-slate-400 shadow-xl">
             <div className="flex items-center justify-between text-white font-semibold">
               <span>Category Base Tier:</span>
-              <span className="text-purple-300 font-mono">{livePlayerPreview.category?.name || 'Platinum Elite'}</span>
+              <span className="text-purple-300 font-mono font-bold">{livePlayerPreview.category?.name || 'Platinum Elite'}</span>
             </div>
             <div className="flex items-center justify-between text-white font-semibold">
-              <span>Starting Valuation:</span>
-              <span className="text-emerald-400 font-mono font-bold">
+              <span>Starting Auction Valuation:</span>
+              <span className="text-emerald-400 font-mono font-black text-sm">
                 ${(livePlayerPreview.category?.basePrice || 5000).toLocaleString()}
               </span>
             </div>
@@ -340,34 +519,34 @@ export const PlayerDashboardPage: React.FC = () => {
 
       {/* Career & Auction Status Hub */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass-card p-6 rounded-3xl border border-slate-800 space-y-2">
-          <div className="w-10 h-10 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center mb-4">
-            <Radio className="w-5 h-5" />
+        <div className="glass-card p-6 rounded-3xl border border-slate-800 space-y-2 hover:border-purple-500/40 transition-colors">
+          <div className="w-12 h-12 rounded-2xl bg-purple-600/20 text-purple-400 flex items-center justify-center mb-4 shadow-lg shadow-purple-600/20">
+            <Radio className="w-6 h-6" />
           </div>
           <h4 className="text-base font-bold text-white">Auction Lot Status</h4>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-400 leading-relaxed">
             {existingPlayer?.isSold
               ? `Sold to ${existingPlayer.team?.name} for $${existingPlayer.finalAuctionPrice?.toLocaleString()}`
               : 'Registered in the active player draft pool. Waiting for live podium pull.'}
           </p>
         </div>
 
-        <div className="glass-card p-6 rounded-3xl border border-slate-800 space-y-2">
-          <div className="w-10 h-10 rounded-xl bg-amber-600/20 text-amber-400 flex items-center justify-center mb-4">
-            <Trophy className="w-5 h-5" />
+        <div className="glass-card p-6 rounded-3xl border border-slate-800 space-y-2 hover:border-amber-500/40 transition-colors">
+          <div className="w-12 h-12 rounded-2xl bg-amber-600/20 text-amber-400 flex items-center justify-center mb-4 shadow-lg shadow-amber-600/20">
+            <Trophy className="w-6 h-6" />
           </div>
           <h4 className="text-base font-bold text-white">Tournament Readiness</h4>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-400 leading-relaxed">
             Verified status active. All match day stats, goals, and cards will track in real-time.
           </p>
         </div>
 
-        <div className="glass-card p-6 rounded-3xl border border-slate-800 space-y-2">
-          <div className="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center mb-4">
-            <Shield className="w-5 h-5" />
+        <div className="glass-card p-6 rounded-3xl border border-slate-800 space-y-2 hover:border-emerald-500/40 transition-colors">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center mb-4 shadow-lg shadow-emerald-600/20">
+            <Shield className="w-6 h-6" />
           </div>
           <h4 className="text-base font-bold text-white">Franchise Affiliation</h4>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-400 leading-relaxed">
             {existingPlayer?.team
               ? `${existingPlayer.team.name} (${existingPlayer.team.code})`
               : 'Unassigned Free Agent (Available in Auction)'}
