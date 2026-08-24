@@ -15,6 +15,7 @@ const tournament_routes_1 = __importDefault(require("./routes/tournament.routes"
 const upload_routes_1 = __importDefault(require("./routes/upload.routes"));
 const nuke_routes_1 = __importDefault(require("./routes/nuke.routes"));
 const news_routes_1 = __importDefault(require("./routes/news.routes"));
+const notification_routes_1 = __importDefault(require("./routes/notification.routes"));
 const app = (0, express_1.default)();
 // Middlewares
 app.use((0, cors_1.default)());
@@ -34,6 +35,7 @@ app.use('/api/v1/tournaments', tournament_routes_1.default);
 app.use('/api/v1/upload', upload_routes_1.default);
 app.use('/api/v1/nuke', nuke_routes_1.default);
 app.use('/api/v1/news', news_routes_1.default);
+app.use('/api/v1/notifications', notification_routes_1.default);
 // Global Error Handler
 app.use(errorHandler_middleware_1.errorHandler);
 exports.default = app;
