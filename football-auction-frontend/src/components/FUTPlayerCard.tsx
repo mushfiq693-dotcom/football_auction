@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import type { Player, Position } from '../types';
-import { Trophy, Zap, Shield, User as UserIcon, Crown, Sparkles } from 'lucide-react';
+import { Trophy, Zap, Shield, Crown, Sparkles } from 'lucide-react';
 
 interface FUTPlayerCardProps {
   player: Partial<Player> & {
@@ -169,6 +169,20 @@ export const FUTPlayerCard: React.FC<FUTPlayerCardProps> = ({
 
   const basePrice = isAce ? 5000 : isGold ? 3000 : 1000;
 
+  const [imgError, setImgError] = useState<boolean>(false);
+
+  React.useEffect(() => {
+    setImgError(false);
+  }, [photo]);
+
+  const initials = (playerName || 'PL')
+    .split(' ')
+    .filter(Boolean)
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
+
   return (
     <div className={`fut-card-wrapper inline-block ${className}`}>
       <div
@@ -246,16 +260,36 @@ export const FUTPlayerCard: React.FC<FUTPlayerCardProps> = ({
             <div className={`relative rounded-2xl overflow-hidden border-2 border-white/20 bg-gradient-to-b from-slate-800/90 to-slate-950 flex items-center justify-center shadow-2xl ${
               size === 'sm' ? 'w-24 h-24' : size === 'stage' ? 'w-44 h-44' : 'w-32 h-32'
             }`}>
-              {photo ? (
+              {photo && !imgError ? (
                 <img
                   src={photo}
-                  alt={playerName}
+                  alt=""
+                  onError={() => setImgError(true)}
                   className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-300"
                 />
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 bg-slate-900">
-                  <UserIcon className={`${size === 'sm' ? 'w-10 h-10' : 'w-16 h-16'} text-purple-400/60`} />
-                  <span className="text-[10px] uppercase font-mono mt-1 text-slate-400">No Photo</span>
+                <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-tr from-slate-950 via-slate-900 to-purple-950 p-2 text-center relative overflow-hidden">
+                  <div className={`absolute inset-0 opacity-15 ${
+                    isAce ? 'bg-cyan-400' : isGold ? 'bg-amber-400' : 'bg-slate-400'
+                  }`} />
+                  
+                  <div className={`font-black font-mono tracking-tighter ${
+                    size === 'sm' ? 'text-2xl' : size === 'stage' ? 'text-5xl' : 'text-3xl'
+                  } ${
+                    isAce
+                      ? 'text-cyan-300 drop-shadow-[0_0_12px_rgba(6,182,212,0.8)]'
+                      : isGold
+                      ? 'text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.8)]'
+                      : 'text-slate-200'
+                  }`}>
+                    {initials}
+                  </div>
+                  
+                  <div className="flex items-center gap-1 mt-1 text-[9px] font-black uppercase tracking-widest text-purple-300 font-mono">
+                    <span>{primaryPos}</span>
+                    <span>•</span>
+                    <span>GPL</span>
+                  </div>
                 </div>
               )}
             </div>

@@ -157,9 +157,14 @@ export const PlayerDashboardPage: React.FC = () => {
     }
 
     setSelectedFile(file);
-    // Instant local preview for 3D card
-    const localUrl = URL.createObjectURL(file);
-    setPhotoUrl(localUrl);
+    // Instant base64 preview and permanent persistent format
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result) {
+        setPhotoUrl(e.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -203,8 +208,8 @@ export const PlayerDashboardPage: React.FC = () => {
             setPhotoUrl(finalPhotoUrl);
           }
         } catch (uploadErr: any) {
-          console.warn('Backend file upload fallback:', uploadErr);
-          // If direct upload fails, keep current image
+          console.warn('Backend file upload fallback to base64 Data URL:', uploadErr);
+          // If cloud upload fails, finalPhotoUrl is already the Base64 Data URL!
         } finally {
           setUploading(false);
         }
