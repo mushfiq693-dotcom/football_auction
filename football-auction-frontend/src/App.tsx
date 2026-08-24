@@ -15,6 +15,7 @@ import { RegisterUserPage } from './pages/RegisterUserPage';
 import { PlayerRosterPage } from './pages/PlayerRosterPage';
 import { PlayerDashboardPage } from './pages/PlayerDashboardPage';
 import { TeamDashboardPage } from './pages/TeamDashboardPage';
+import { PresentationPage } from './pages/PresentationPage';
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ export function App() {
                     <Route path="/auction" element={<LiveAuctionPage />} />
                     <Route path="/tournament" element={<TournamentPage />} />
                     <Route path="/admin" element={<AdminDashboardPage />} />
+                    <Route path="/presentation" element={<PresentationPage />} />
                   </Routes>
                 </main>
               </div>

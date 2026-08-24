@@ -418,6 +418,15 @@ export const Navbar: React.FC = () => {
                       <Trophy className="w-4 h-4 text-slate-400" />
                       <span>Standings & Match Center</span>
                     </Link>
+
+                    <Link
+                      to="/presentation"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-cyan-300 bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-500/30 transition-colors"
+                    >
+                      <Sparkles className="w-4 h-4 text-cyan-400" />
+                      <span>Judges Presentation Slides</span>
+                    </Link>
                   </div>
 
                   {/* Logout Action */}
