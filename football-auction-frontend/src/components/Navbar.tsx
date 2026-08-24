@@ -370,7 +370,7 @@ export const Navbar: React.FC = () => {
                       </Link>
                     )}
 
-                    {(user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') && (
+                    {user.role === 'SUPER_ADMIN' && (
                       <Link
                         to="/admin"
                         onClick={() => setDropdownOpen(false)}
@@ -388,12 +388,12 @@ export const Navbar: React.FC = () => {
                       <Link
                         to="/auction"
                         onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold text-cyan-300 hover:bg-cyan-500/20 transition-colors"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition-colors"
                       >
-                        <Radio className="w-4 h-4 text-cyan-400" />
+                        <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
                         <div>
-                          <span>Podium Auction Stage</span>
-                          <span className="text-[10px] block text-slate-400 font-normal">Stage controller & lot timer</span>
+                          <span>Podium Stage Controller</span>
+                          <span className="text-[10px] block text-slate-400 font-normal">Live lot timer, overrides & hammer</span>
                         </div>
                       </Link>
                     )}

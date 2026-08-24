@@ -14,5 +14,5 @@ const updatePhaseSchema = zod_1.z.object({
     }),
 });
 router.get('/', globalState_controller_1.GlobalStateController.getState);
-router.post('/phase', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), (0, validate_middleware_1.validate)(updatePhaseSchema), globalState_controller_1.GlobalStateController.updatePhase);
+router.post('/phase', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN), (0, validate_middleware_1.validate)(updatePhaseSchema), globalState_controller_1.GlobalStateController.updatePhase);
 exports.default = router;

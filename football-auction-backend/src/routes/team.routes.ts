@@ -25,7 +25,7 @@ const createTeamSchema = z.object({
 router.post(
   '/',
   authenticate,
-  roleGuard(Role.SUPER_ADMIN, Role.ADMIN),
+  roleGuard(Role.SUPER_ADMIN),
   validate(createTeamSchema),
   TeamController.createTeam
 );

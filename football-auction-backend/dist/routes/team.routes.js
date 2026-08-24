@@ -21,7 +21,7 @@ const createTeamSchema = zod_1.z.object({
         maxPlayerLimit: zod_1.z.number().int().positive().optional(),
     }),
 });
-router.post('/', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), (0, validate_middleware_1.validate)(createTeamSchema), team_controller_1.TeamController.createTeam);
+router.post('/', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN), (0, validate_middleware_1.validate)(createTeamSchema), team_controller_1.TeamController.createTeam);
 router.get('/', team_controller_1.TeamController.getTeams);
 router.get('/:id', team_controller_1.TeamController.getTeamById);
 exports.default = router;

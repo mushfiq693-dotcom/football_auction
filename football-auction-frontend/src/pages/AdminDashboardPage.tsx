@@ -262,13 +262,18 @@ export const AdminDashboardPage: React.FC = () => {
         <div>
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-purple-900/60 to-indigo-900/60 border border-purple-500/40 text-purple-300 text-xs font-bold uppercase tracking-wider mb-2 shadow-lg shadow-purple-900/20">
             <Crown className="w-4 h-4 text-purple-400" />
-            Super Admin Command Center
+            {user?.role === 'SUPER_ADMIN' ? 'Super Admin Command Center' : 'Podium Stage Coordinator & Ratings Desk'}
           </div>
           <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight">
-            League Management & <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">Coordinator</span>
+            {user?.role === 'SUPER_ADMIN' ? 'League Management &' : 'Auction Stage &'}{' '}
+            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
+              {user?.role === 'SUPER_ADMIN' ? 'Coordinator' : 'Podium Controller'}
+            </span>
           </h1>
           <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-            Arrange live auctions, setup tournaments, manage Team Owners, Podium Admins, and calibrate Player FUT Ratings.
+            {user?.role === 'SUPER_ADMIN'
+              ? 'Arrange live auctions, setup tournaments, manage Team Owners, Podium Admins, and calibrate Player FUT Ratings.'
+              : 'Evaluate player FUT Ratings, coordinate live podium lot transitions, and monitor tournament standings.'}
           </p>
         </div>
 
@@ -277,7 +282,7 @@ export const AdminDashboardPage: React.FC = () => {
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
             Phase: <strong className="text-white">{activePhase}</strong>
           </div>
-          {pendingUsers.length > 0 && (
+          {user?.role === 'SUPER_ADMIN' && pendingUsers.length > 0 && (
             <button
               onClick={() => setActiveTab('APPROVALS')}
               className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-950/80 border border-amber-500/50 text-amber-300 text-xs font-bold animate-bounce"
@@ -304,12 +309,16 @@ export const AdminDashboardPage: React.FC = () => {
       {/* Navigation Tab Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800 scrollbar-none">
         {[
-          { id: 'MANAGERS', label: 'Team & Podium Managers', icon: Users, count: teamOwners.length + podiumAdmins.length },
+          { id: 'MANAGERS', label: 'Team & Stage Managers', icon: Users, count: teamOwners.length + podiumAdmins.length },
           { id: 'PLAYERS', label: 'Player Roster & Ratings', icon: Sliders, count: players.length },
-          { id: 'AUCTION', label: 'Auction Coordinator', icon: Gavel },
+          { id: 'AUCTION', label: 'Auction Stage Hub', icon: Gavel },
           { id: 'TOURNAMENT', label: 'Tournament Organizer', icon: Trophy },
-          { id: 'APPROVALS', label: 'User Approvals', icon: ShieldAlert, count: pendingUsers.length },
-          { id: 'SYSTEM', label: 'State & Protocols', icon: Settings },
+          ...(user?.role === 'SUPER_ADMIN'
+            ? [
+                { id: 'APPROVALS', label: 'User Approvals', icon: ShieldAlert, count: pendingUsers.length },
+                { id: 'SYSTEM', label: 'State & Protocols (Nuke)', icon: Settings },
+              ]
+            : []),
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -351,12 +360,14 @@ export const AdminDashboardPage: React.FC = () => {
                 </p>
               </div>
 
-              <button
-                onClick={() => setShowCreateTeamModal(true)}
-                className="px-4 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-extrabold flex items-center gap-2 shadow-lg shadow-purple-600/30 transition-all cursor-pointer"
-              >
-                <Plus className="w-4 h-4" /> Add New Franchise
-              </button>
+              {user?.role === 'SUPER_ADMIN' && (
+                <button
+                  onClick={() => setShowCreateTeamModal(true)}
+                  className="px-4 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-extrabold flex items-center gap-2 shadow-lg shadow-purple-600/30 transition-all cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" /> Add New Franchise
+                </button>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
