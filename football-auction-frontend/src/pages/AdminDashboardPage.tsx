@@ -149,6 +149,20 @@ export const AdminDashboardPage: React.FC = () => {
     }
   };
 
+  const handleDeleteUser = async (targetUserId: string, targetUserName: string) => {
+    if (!window.confirm(`Are you sure you want to delete / remove "${targetUserName}"? This action cannot be undone.`)) {
+      return;
+    }
+    try {
+      setMsg(null);
+      const res = await api.delete(`/auth/users/${targetUserId}`);
+      setMsg(res.data?.message || `User "${targetUserName}" removed successfully.`);
+      loadAdminData();
+    } catch (err: any) {
+      setMsg(err.response?.data?.message || 'Failed to delete user.');
+    }
+  };
+
   const handlePhaseChange = async (newPhase: Phase) => {
     try {
       setUpdating(true);
@@ -410,28 +424,54 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {podiumAdmins.map((adm) => (
-                <div key={adm.id} className="glass-card p-6 rounded-3xl border border-slate-800 space-y-3 hover:border-amber-500/40 transition-all">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-amber-600/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                      <Crown className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h4 className="text-base font-bold text-white">{adm.fullName}</h4>
-                      <span className="text-xs text-slate-400 font-mono">{adm.email}</span>
-                    </div>
-                  </div>
+              {podiumAdmins.map((adm) => {
+                const isCurrentUser = adm.id === user?.id;
+                return (
+                  <div
+                    key={adm.id}
+                    className="glass-card p-6 rounded-3xl border border-slate-800 space-y-4 hover:border-amber-500/40 transition-all relative group"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-amber-600/20 border border-amber-500/30 flex items-center justify-center text-amber-400 flex-shrink-0">
+                          <Crown className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h4 className="text-base font-bold text-white flex items-center gap-1.5">
+                            <span>{adm.fullName}</span>
+                            {isCurrentUser && (
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/30 text-purple-300 border border-purple-500/40">
+                                You
+                              </span>
+                            )}
+                          </h4>
+                          <span className="text-xs text-slate-400 font-mono block mt-0.5">{adm.email}</span>
+                        </div>
+                      </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs">
-                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40">
-                      {adm.role === 'SUPER_ADMIN' ? 'Super Admin' : 'Podium Stage Manager'}
-                    </span>
-                    <span className="text-emerald-400 font-bold flex items-center gap-1">
-                      <CheckCircle className="w-3.5 h-3.5" /> Authorized
-                    </span>
+                      {/* Super Admin Delete / Revoke Stage Controller Button */}
+                      {!isCurrentUser && user?.role === 'SUPER_ADMIN' && (
+                        <button
+                          onClick={() => handleDeleteUser(adm.id, adm.fullName)}
+                          className="p-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/25 border border-red-500/30 text-red-400 hover:text-red-300 transition-all cursor-pointer shadow-sm"
+                          title={`Delete Stage Controller: ${adm.fullName}`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs">
+                      <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                        {adm.role === 'SUPER_ADMIN' ? 'Super Admin' : 'Podium Stage Manager'}
+                      </span>
+                      <span className="text-emerald-400 font-bold flex items-center gap-1">
+                        <CheckCircle className="w-3.5 h-3.5" /> Authorized
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

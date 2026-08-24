@@ -39,6 +39,7 @@ router.get('/me', authenticate, AuthController.me);
 router.get('/users', authenticate, roleGuard(Role.SUPER_ADMIN, Role.ADMIN), AuthController.getAllUsers);
 router.get('/pending-users', authenticate, roleGuard(Role.SUPER_ADMIN), AuthController.getPendingUsers);
 router.patch('/verify-user/:userId', authenticate, roleGuard(Role.SUPER_ADMIN), validate(verifyUserSchema), AuthController.verifyUser);
+router.delete('/users/:userId', authenticate, roleGuard(Role.SUPER_ADMIN), AuthController.deleteUser);
 
 // Backward-compatible endpoints
 router.get('/pending-admins', authenticate, roleGuard(Role.SUPER_ADMIN), AuthController.getPendingUsers);

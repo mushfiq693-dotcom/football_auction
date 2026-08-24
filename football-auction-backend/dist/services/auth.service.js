@@ -162,5 +162,48 @@ class AuthService {
             return { status: 'REJECTED', message: 'User registration request rejected and deleted.' };
         }
     }
+    static async deleteUser(targetUserId, requestingUserId) {
+        if (targetUserId === requestingUserId) {
+            throw new errorHandler_middleware_1.AppError(400, 'You cannot delete your own account while logged in as Super Admin.');
+        }
+        const user = await database_1.prisma.user.findUnique({
+            where: { id: targetUserId },
+            include: {
+                teamOwner: true,
+                playerProfile: true,
+            },
+        });
+        if (!user) {
+            throw new errorHandler_middleware_1.AppError(404, 'User not found');
+        }
+        await database_1.prisma.$transaction(async (tx) => {
+            // 1. If user is a team owner, handle team
+            if (user.teamOwner) {
+                await tx.team.delete({
+                    where: { id: user.teamOwner.id },
+                }).catch(async () => {
+                    await tx.team.update({
+                        where: { id: user.teamOwner.id },
+                        data: { ownerId: requestingUserId },
+                    });
+                });
+            }
+            // 2. If user has a player profile, delete player profile
+            if (user.playerProfile) {
+                await tx.player.delete({
+                    where: { id: user.playerProfile.id },
+                });
+            }
+            // 3. Delete notifications
+            await tx.notification.deleteMany({
+                where: { userId: targetUserId },
+            });
+            // 4. Delete user record
+            await tx.user.delete({
+                where: { id: targetUserId },
+            });
+        });
+        return { success: true, message: `User ${user.fullName} (${user.email}) deleted successfully.` };
+    }
 }
 exports.AuthService = AuthService;

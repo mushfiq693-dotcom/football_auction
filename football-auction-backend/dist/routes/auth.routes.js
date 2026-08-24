@@ -35,6 +35,7 @@ router.get('/me', auth_middleware_1.authenticate, auth_controller_1.AuthControll
 router.get('/users', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), auth_controller_1.AuthController.getAllUsers);
 router.get('/pending-users', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN), auth_controller_1.AuthController.getPendingUsers);
 router.patch('/verify-user/:userId', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN), (0, validate_middleware_1.validate)(verifyUserSchema), auth_controller_1.AuthController.verifyUser);
+router.delete('/users/:userId', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN), auth_controller_1.AuthController.deleteUser);
 // Backward-compatible endpoints
 router.get('/pending-admins', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN), auth_controller_1.AuthController.getPendingUsers);
 router.patch('/verify-admin/:userId', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN), (0, validate_middleware_1.validate)(verifyUserSchema), auth_controller_1.AuthController.verifyUser);

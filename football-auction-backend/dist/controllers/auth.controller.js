@@ -82,5 +82,19 @@ class AuthController {
             next(error);
         }
     }
+    static async deleteUser(req, res, next) {
+        try {
+            const targetUserId = req.params.userId;
+            const requestingUserId = req.user.userId;
+            const result = await auth_service_1.AuthService.deleteUser(targetUserId, requestingUserId);
+            res.status(200).json({
+                success: true,
+                message: result.message,
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
 }
 exports.AuthController = AuthController;
