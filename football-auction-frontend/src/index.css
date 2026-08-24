@@ -32,12 +32,16 @@ body {
   box-shadow: 0 0 25px rgba(34, 197, 94, 0.4);
 }
 
-.neon-glow-gold {
-  box-shadow: 0 0 30px rgba(234, 179, 8, 0.45);
+.neon-glow-ace {
+  box-shadow: 0 0 35px rgba(168, 85, 247, 0.6), 0 0 15px rgba(6, 182, 212, 0.4);
 }
 
-.neon-glow-platinum {
-  box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+.neon-glow-gold {
+  box-shadow: 0 0 35px rgba(234, 179, 8, 0.55), 0 0 15px rgba(251, 191, 36, 0.4);
+}
+
+.neon-glow-silver {
+  box-shadow: 0 0 30px rgba(148, 163, 184, 0.45), 0 0 12px rgba(56, 189, 248, 0.3);
 }
 
 /* 3D Holographic FUT Card Styles */
@@ -81,16 +85,16 @@ body {
   animation: holographicShine 6s ease infinite;
 }
 
-.gold-foil-bg {
-  background: radial-gradient(circle at 50% 0%, #ffe066 0%, #b8860b 40%, #593e03 85%, #1a1202 100%);
+.ace-foil-bg {
+  background: radial-gradient(circle at 50% 0%, #f3e8ff 0%, #a855f7 30%, #4c1d95 70%, #090314 100%);
 }
 
-.platinum-foil-bg {
-  background: radial-gradient(circle at 50% 0%, #e0e7ff 0%, #818cf8 35%, #4338ca 75%, #0f172a 100%);
+.gold-foil-bg {
+  background: radial-gradient(circle at 50% 0%, #fef08a 0%, #eab308 30%, #854d0e 70%, #170d01 100%);
 }
 
 .silver-foil-bg {
-  background: radial-gradient(circle at 50% 0%, #f1f5f9 0%, #94a3b8 40%, #334155 80%, #0f172a 100%);
+  background: radial-gradient(circle at 50% 0%, #f8fafc 0%, #94a3b8 35%, #334155 75%, #050b14 100%);
 }
 
 @keyframes borderGlow {

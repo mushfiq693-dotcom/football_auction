@@ -30,6 +30,21 @@ class PlayerController {
             next(error);
         }
     }
+    static async setRating(req, res, next) {
+        try {
+            const id = req.params.id;
+            const { rating } = req.body;
+            const player = await player_service_1.PlayerService.setPlayerRating(id, Number(rating));
+            res.status(200).json({
+                success: true,
+                message: `Player rating set to ${rating} (${player.category?.name || 'Tier'})`,
+                data: player,
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
     static async getPlayers(req, res, next) {
         try {
             const seasonId = req.query.seasonId;

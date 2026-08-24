@@ -33,6 +33,12 @@ const verifyPlayerSchema = z.object({
   }),
 });
 
+const setRatingSchema = z.object({
+  body: z.object({
+    rating: z.number().min(1).max(99),
+  }),
+});
+
 // Player fetches their own profile
 router.get('/me', authenticate, PlayerController.getMyProfile);
 
@@ -47,6 +53,15 @@ router.post(
 
 // Get player roster
 router.get('/', PlayerController.getPlayers);
+
+// Podium Admin / Super Admin sets rating & tier
+router.patch(
+  '/:id/rating',
+  authenticate,
+  roleGuard(Role.SUPER_ADMIN, Role.ADMIN),
+  validate(setRatingSchema),
+  PlayerController.setRating
+);
 
 // Admin approves or rejects player profile
 router.patch(

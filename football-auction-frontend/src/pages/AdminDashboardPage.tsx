@@ -3,13 +3,13 @@ import { useGlobalPhase } from '../contexts/GlobalStateContext';
 import { useAuth } from '../contexts/AuthContext';
 import type { Phase, Player, User } from '../types';
 import { api } from '../services/api';
+import { FUTPlayerCard } from '../components/FUTPlayerCard';
 import {
   Radio,
   Activity,
   Trophy,
   Settings,
   CheckCircle2,
-  UserCheck,
   ShieldAlert,
   Check,
   X,
@@ -19,6 +19,9 @@ import {
   Search,
   Filter,
   Crown,
+  Sparkles,
+  Sliders,
+  Eye,
 } from 'lucide-react';
 
 export const AdminDashboardPage: React.FC = () => {
@@ -30,6 +33,11 @@ export const AdminDashboardPage: React.FC = () => {
   // Players Management State
   const [players, setPlayers] = useState<Player[]>([]);
   const [loadingPlayers, setLoadingPlayers] = useState<boolean>(true);
+  const [playerSearch, setPlayerSearch] = useState<string>('');
+  const [selectedPreviewPlayer, setSelectedPreviewPlayer] = useState<Player | null>(null);
+  const [editingRatingPlayerId, setEditingRatingPlayerId] = useState<string | null>(null);
+  const [currentEditingRating, setCurrentEditingRating] = useState<number>(80);
+  const [savingRating, setSavingRating] = useState<boolean>(false);
 
   // Pending User Approvals State (Super Admin Only)
   const [pendingUsers, setPendingUsers] = useState<User[]>([]);
@@ -88,6 +96,26 @@ export const AdminDashboardPage: React.FC = () => {
       fetchPlayers();
     } catch (err: any) {
       setMsg(err.response?.data?.message || 'Player verification failed');
+    }
+  };
+
+  const handleSavePlayerRating = async (playerId: string, ratingValue: number) => {
+    try {
+      setSavingRating(true);
+      const res = await api.patch(`/players/${playerId}/rating`, {
+        rating: Number(ratingValue),
+      });
+      const tier = ratingValue >= 88 ? 'ACE' : ratingValue >= 75 ? 'GOLD' : 'SILVER';
+      setMsg(`⭐ Player rating updated to ${ratingValue} (${tier} Tier)!`);
+      setEditingRatingPlayerId(null);
+      fetchPlayers();
+      if (selectedPreviewPlayer?.id === playerId) {
+        setSelectedPreviewPlayer(res.data.data);
+      }
+    } catch (err: any) {
+      setMsg(err.response?.data?.message || 'Failed to update rating');
+    } finally {
+      setSavingRating(false);
     }
   };
 
@@ -159,6 +187,14 @@ export const AdminDashboardPage: React.FC = () => {
     return matchesRole && matchesSearch;
   });
 
+  const filteredPlayers = players.filter((p) => {
+    const name = (p.user?.fullName || p.jerseyName || '').toLowerCase();
+    const student = (p.studentId || '').toLowerCase();
+    const pos = (p.position || '').toLowerCase();
+    const q = playerSearch.toLowerCase();
+    return name.includes(q) || student.includes(q) || pos.includes(q);
+  });
+
   const phases: { key: Phase; title: string; desc: string; icon: any }[] = [
     { key: 'SETUP', title: 'Phase 1: Setup', desc: 'Configure season rules, categories, budgets', icon: Settings },
     { key: 'PLAYER_REGISTRATION', title: 'Phase 2: Player Registration', desc: 'Open player submissions and verifications', icon: Activity },
@@ -175,8 +211,8 @@ export const AdminDashboardPage: React.FC = () => {
             <Crown className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-3xl font-extrabold text-white">Super Admin Command Center</h1>
-            <p className="text-sm text-slate-400">User Approvals, Global State Machine, Fixtures & Lifecycle Protocols</p>
+            <h1 className="text-3xl font-extrabold text-white">Podium & Super Admin Command Center</h1>
+            <p className="text-sm text-slate-400">Player Ratings & Tier Assignment (ACE/GOLD/SILVER), State Machine & Lifecycle</p>
           </div>
         </div>
 
@@ -188,11 +224,301 @@ export const AdminDashboardPage: React.FC = () => {
       </div>
 
       {msg && (
-        <div className="p-4 rounded-2xl bg-purple-500/20 border border-purple-500/40 text-purple-300 text-sm font-semibold flex items-center justify-between">
-          <span>{msg}</span>
-          <button onClick={() => setMsg(null)} className="text-purple-400 hover:text-white text-xs">
+        <div className="p-4 rounded-2xl bg-purple-500/20 border border-purple-500/40 text-purple-300 text-sm font-semibold flex items-center justify-between animate-fade-in shadow-lg">
+          <span className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-purple-400" />
+            {msg}
+          </span>
+          <button onClick={() => setMsg(null)} className="text-purple-400 hover:text-white text-xs font-bold">
             ✕
           </button>
+        </div>
+      )}
+
+      {/* Podium Admin: Player Ratings & Tier Categorization (ACE / GOLD / SILVER) */}
+      <div className="glass-card p-8 rounded-3xl border border-purple-500/40 space-y-6 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
+          <div>
+            <h2 className="text-xl font-black text-white flex items-center gap-2.5">
+              <Sliders className="w-6 h-6 text-purple-400" />
+              <span>Player Evaluation & Tier Rating (Podium Admin)</span>
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Set player ratings (1-99). The system automatically assigns <strong className="text-cyan-300">ACE (88+)</strong>, <strong className="text-amber-300">GOLD (75-87)</strong>, or <strong className="text-slate-300">SILVER (&lt;75)</strong> with matching 3D holographic card backgrounds!
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="relative min-w-[220px]">
+              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                placeholder="Search registered players..."
+                value={playerSearch}
+                onChange={(e) => setPlayerSearch(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
+              />
+            </div>
+            <span className="text-xs px-3 py-1.5 rounded-full bg-purple-900/60 text-purple-300 font-mono">
+              {filteredPlayers.length} Players
+            </span>
+          </div>
+        </div>
+
+        {/* Tier Legend Bar */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="p-3 rounded-2xl bg-purple-950/60 border border-cyan-500/40 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-cyan-400 shadow-md shadow-cyan-400/50" />
+              <span className="font-extrabold text-cyan-300">ACE TIER (88 - 99 OVR)</span>
+            </div>
+            <span className="font-mono text-slate-300 font-bold">$5,000 Base</span>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-amber-950/60 border border-amber-500/40 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-amber-400 shadow-md shadow-amber-400/50" />
+              <span className="font-extrabold text-amber-300">GOLD TIER (75 - 87 OVR)</span>
+            </div>
+            <span className="font-mono text-slate-300 font-bold">$3,000 Base</span>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-600/40 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-slate-400" />
+              <span className="font-extrabold text-slate-300">SILVER TIER (&lt; 75 OVR)</span>
+            </div>
+            <span className="font-mono text-slate-300 font-bold">$1,000 Base</span>
+          </div>
+        </div>
+
+        {/* Players List with Rating Editors */}
+        {loadingPlayers ? (
+          <div className="py-8 text-center text-slate-400 text-sm">Loading registered players...</div>
+        ) : filteredPlayers.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm text-slate-300">
+              <thead className="bg-slate-900/90 text-xs uppercase text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th className="py-3.5 px-4 font-semibold">Player</th>
+                  <th className="py-3.5 px-4 font-semibold">Position</th>
+                  <th className="py-3.5 px-4 font-semibold">Current Rating & Tier</th>
+                  <th className="py-3.5 px-4 font-semibold">Base Price</th>
+                  <th className="py-3.5 px-4 text-right font-semibold">Set Rating (Podium Admin)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {filteredPlayers.map((p) => {
+                  const rating = p.rating !== undefined ? p.rating : 80;
+                  const isAce = rating >= 88;
+                  const isGold = rating >= 75 && rating < 88;
+                  const tierName = isAce ? 'ACE' : isGold ? 'GOLD' : 'SILVER';
+                  const baseVal = isAce ? 5000 : isGold ? 3000 : 1000;
+                  const isEditing = editingRatingPlayerId === p.id;
+
+                  return (
+                    <tr key={p.id} className="hover:bg-slate-900/50 transition-colors">
+                      <td className="py-3.5 px-4 font-bold text-white flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-800 border border-slate-700 flex-shrink-0">
+                          {p.photoUrl ? (
+                            <img src={p.photoUrl} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center font-bold text-xs text-purple-400">
+                              {(p.jerseyName || p.user?.fullName || 'P').substring(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <span className="block">{p.jerseyName || p.user?.fullName || 'Player'}</span>
+                          <span className="text-[10px] text-slate-500 font-mono block">
+                            ID: {p.studentId || 'N/A'} • {p.academicSession || '2023-2024'}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <span className="text-xs font-mono font-bold px-2 py-1 rounded bg-slate-800 text-slate-200 border border-slate-700">
+                          {p.position}
+                        </span>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`text-sm font-black font-mono px-2.5 py-0.5 rounded-lg border ${
+                              isAce
+                                ? 'bg-purple-950 text-cyan-300 border-cyan-400/50 shadow-md shadow-purple-900/50'
+                                : isGold
+                                ? 'bg-amber-950 text-amber-300 border-amber-400/50 shadow-md shadow-amber-900/50'
+                                : 'bg-slate-800 text-slate-300 border-slate-600/50'
+                            }`}
+                          >
+                            {rating} OVR
+                          </span>
+                          <span
+                            className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
+                              isAce
+                                ? 'bg-cyan-500/20 text-cyan-300'
+                                : isGold
+                                ? 'bg-amber-500/20 text-amber-300'
+                                : 'bg-slate-700 text-slate-300'
+                            }`}
+                          >
+                            {tierName}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 font-mono font-bold text-emerald-400 text-xs">
+                        <div>${baseVal.toLocaleString()}</div>
+                        {p.registrationStatus === 'PENDING' && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <button
+                              onClick={() => handleVerifyPlayer(p.id, 'APPROVED')}
+                              className="px-2 py-0.5 rounded bg-emerald-600/80 hover:bg-emerald-500 text-[10px] font-bold text-white"
+                              title="Approve Profile"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleVerifyPlayer(p.id, 'REJECTED')}
+                              className="px-2 py-0.5 rounded bg-red-600/80 hover:bg-red-500 text-[10px] font-bold text-white"
+                              title="Reject Profile"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                      </td>
+
+                      <td className="py-3.5 px-4 text-right">
+                        {isEditing ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <input
+                              type="number"
+                              min="1"
+                              max="99"
+                              value={currentEditingRating}
+                              onChange={(e) => setCurrentEditingRating(Number(e.target.value))}
+                              className="w-16 px-2 py-1 rounded-lg bg-slate-900 border border-purple-500 text-white font-mono text-xs text-center"
+                            />
+                            <button
+                              onClick={() => handleSavePlayerRating(p.id, currentEditingRating)}
+                              disabled={savingRating}
+                              className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => setEditingRatingPlayerId(null)}
+                              className="px-2 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white text-xs"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-end gap-1.5">
+                            {/* Preset Buttons */}
+                            <button
+                              onClick={() => handleSavePlayerRating(p.id, 92)}
+                              className="px-2 py-1 rounded-lg bg-purple-950/80 hover:bg-purple-900 border border-cyan-500/40 text-cyan-300 text-[10px] font-bold transition-all"
+                              title="Set as ACE (92 OVR)"
+                            >
+                              👑 ACE
+                            </button>
+                            <button
+                              onClick={() => handleSavePlayerRating(p.id, 84)}
+                              className="px-2 py-1 rounded-lg bg-amber-950/80 hover:bg-amber-900 border border-amber-500/40 text-amber-300 text-[10px] font-bold transition-all"
+                              title="Set as GOLD (84 OVR)"
+                            >
+                              🥇 GOLD
+                            </button>
+                            <button
+                              onClick={() => handleSavePlayerRating(p.id, 74)}
+                              className="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-[10px] font-bold transition-all"
+                              title="Set as SILVER (74 OVR)"
+                            >
+                              🥈 SILVER
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                setEditingRatingPlayerId(p.id);
+                                setCurrentEditingRating(p.rating || 80);
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-purple-600 text-white text-xs font-semibold transition-all ml-1"
+                              title="Custom Rating"
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              onClick={() => setSelectedPreviewPlayer(p)}
+                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-purple-600/40 text-purple-300 border border-slate-700 transition-all"
+                              title="Preview 3D FUT Card"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="py-8 text-center text-slate-500 text-sm">
+            No registered players found matching your search.
+          </div>
+        )}
+      </div>
+
+      {/* 3D FUT Card Preview Modal for Podium Admin */}
+      {selectedPreviewPlayer && (
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-6">
+          <div className="glass-card max-w-lg w-full p-8 rounded-3xl border border-purple-500/50 space-y-6 shadow-2xl flex flex-col items-center relative">
+            <button
+              onClick={() => setSelectedPreviewPlayer(null)}
+              className="absolute top-4 right-4 p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="text-center">
+              <span className="text-xs font-extrabold uppercase tracking-widest text-purple-400 flex items-center justify-center gap-1.5">
+                <Sparkles className="w-4 h-4" />
+                Live 3D FUT Card Preview
+              </span>
+              <h3 className="text-xl font-bold text-white mt-1">
+                {selectedPreviewPlayer.jerseyName || selectedPreviewPlayer.user?.fullName}
+              </h3>
+            </div>
+
+            <FUTPlayerCard player={selectedPreviewPlayer} size="lg" interactive={true} />
+
+            <div className="w-full flex items-center justify-between pt-2">
+              <span className="text-xs text-slate-400">
+                Assigned Tier:{' '}
+                <strong className="text-white">
+                  {(selectedPreviewPlayer.rating || 80) >= 88
+                    ? 'ACE ($5,000)'
+                    : (selectedPreviewPlayer.rating || 80) >= 75
+                    ? 'GOLD ($3,000)'
+                    : 'SILVER ($1,000)'}
+                </strong>
+              </span>
+              <button
+                onClick={() => setSelectedPreviewPlayer(null)}
+                className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -386,81 +712,6 @@ export const AdminDashboardPage: React.FC = () => {
             {generatingFixtures ? 'Generating...' : 'Generate Season Fixtures'}
           </button>
         </div>
-      </div>
-
-      {/* Player Profile Verification Section */}
-      <div className="glass-card p-8 rounded-3xl border border-slate-800 space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <UserCheck className="w-5 h-5 text-emerald-400" />
-            <span>Player Athlete Registrations (Phase 2)</span>
-          </h2>
-          <span className="text-xs px-3 py-1 rounded-full bg-slate-800 text-slate-300 font-mono">
-            {players.length} Total
-          </span>
-        </div>
-
-        {loadingPlayers ? (
-          <div className="py-6 text-center text-slate-400 text-sm">Loading players...</div>
-        ) : players.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-slate-900/90 text-xs uppercase text-slate-400 border-b border-slate-800">
-                <tr>
-                  <th className="py-3.5 px-4">Player Name</th>
-                  <th className="py-3.5 px-4">Student ID</th>
-                  <th className="py-3.5 px-4">Position</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4 text-right">Verification Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800">
-                {players.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-900/50 transition-colors">
-                    <td className="py-3.5 px-4 font-bold text-white">{p.user?.fullName || 'Player'}</td>
-                    <td className="py-3.5 px-4 text-xs font-mono text-slate-400">{p.studentId || 'N/A'}</td>
-                    <td className="py-3.5 px-4 text-xs font-mono text-slate-300">{p.position}</td>
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full ${
-                          p.registrationStatus === 'APPROVED'
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                            : p.registrationStatus === 'REJECTED'
-                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                            : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                        }`}
-                      >
-                        {p.registrationStatus}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-right space-x-2">
-                      {p.registrationStatus === 'PENDING' && (
-                        <>
-                          <button
-                            onClick={() => handleVerifyPlayer(p.id, 'APPROVED')}
-                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => handleVerifyPlayer(p.id, 'REJECTED')}
-                            className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition-all"
-                          >
-                            Reject
-                          </button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="py-8 text-center text-slate-500 text-sm">
-            No player profiles submitted yet.
-          </div>
-        )}
       </div>
 
       {/* Super Admin Module 4: Lifecycle Reset (Nuke Protocols) */}

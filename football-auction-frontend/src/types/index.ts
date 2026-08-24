@@ -40,6 +40,7 @@ export interface Player {
   userId: string;
   seasonId: string;
   categoryId?: string;
+  rating?: number;
   studentId?: string;
   academicSession?: string;
   jerseyName?: string;

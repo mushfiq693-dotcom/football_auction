@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import type { Player, Position } from '../types';
-import { Trophy, Zap, Shield, User as UserIcon } from 'lucide-react';
+import { Trophy, Zap, Shield, User as UserIcon, Crown, Sparkles } from 'lucide-react';
 
 interface FUTPlayerCardProps {
   player: Partial<Player> & {
@@ -27,14 +27,27 @@ export const FUTPlayerCard: React.FC<FUTPlayerCardProps> = ({
   const [rotateY, setRotateY] = useState<number>(0);
   const [glarePosition, setGlarePosition] = useState<{ x: number; y: number } | null>(null);
 
-  // Card theme tier
-  const tierName = player.category?.name?.toLowerCase() || '';
-  const isPlatinum = tierName.includes('platinum') || tierName.includes('tier 1') || (player.category?.basePrice || 0) >= 5000;
-  const isGold = !isPlatinum && (tierName.includes('gold') || tierName.includes('tier 2') || (player.category?.basePrice || 0) >= 3000);
+  // Exact Rating from database or derived from category
+  const rawRating = player.rating;
+  const tierName = (player.category?.name || '').toLowerCase();
   
-  // Calculate rating based on tier/base price
-  const basePrice = player.category?.basePrice || 1000;
-  const overallRating = isPlatinum ? 92 : isGold ? 86 : 79;
+  // Categorization based on rating (Rating >= 88: ACE, 75-87: GOLD, <75: SILVER)
+  const isAce =
+    (rawRating !== undefined && rawRating >= 88) ||
+    tierName.includes('ace') ||
+    tierName.includes('platinum') ||
+    tierName.includes('tier 1') ||
+    (player.category?.basePrice || 0) >= 5000;
+
+  const isGold =
+    !isAce &&
+    ((rawRating !== undefined && rawRating >= 75) ||
+      tierName.includes('gold') ||
+      tierName.includes('tier 2') ||
+      (player.category?.basePrice || 0) >= 3000);
+
+  // Final Overall Rating display (default fallback if not set)
+  const overallRating = rawRating !== undefined ? rawRating : isAce ? 92 : isGold ? 84 : 72;
 
   // Short position code
   const getPositionCode = (pos?: Position | string): string => {
@@ -52,53 +65,56 @@ export const FUTPlayerCard: React.FC<FUTPlayerCardProps> = ({
   const secondaryPos = player.secondaryPosition ? getPositionCode(player.secondaryPosition) : null;
   const photo = player.photoUrl || player.user?.avatarUrl;
 
-  // Stats calculation based on position
+  // Position-scaled attributes calculation
   const getStats = () => {
+    const scale = overallRating / 80;
+    const clamp = (val: number) => Math.min(99, Math.max(40, Math.round(val * scale)));
+
     switch (player.position) {
       case 'FORWARD':
         return [
-          { label: 'PAC', value: 89 },
-          { label: 'SHO', value: 91 },
-          { label: 'PAS', value: 82 },
-          { label: 'DRI', value: 88 },
-          { label: 'DEF', value: 45 },
-          { label: 'PHY', value: 80 },
+          { label: 'PAC', value: clamp(88) },
+          { label: 'SHO', value: clamp(90) },
+          { label: 'PAS', value: clamp(80) },
+          { label: 'DRI', value: clamp(86) },
+          { label: 'DEF', value: clamp(45) },
+          { label: 'PHY', value: clamp(79) },
         ];
       case 'MIDFIELDER':
         return [
-          { label: 'PAC', value: 84 },
-          { label: 'SHO', value: 81 },
-          { label: 'PAS', value: 90 },
-          { label: 'DRI', value: 87 },
-          { label: 'DEF', value: 75 },
-          { label: 'PHY', value: 83 },
+          { label: 'PAC', value: clamp(82) },
+          { label: 'SHO', value: clamp(80) },
+          { label: 'PAS', value: clamp(89) },
+          { label: 'DRI', value: clamp(85) },
+          { label: 'DEF', value: clamp(73) },
+          { label: 'PHY', value: clamp(81) },
         ];
       case 'DEFENDER':
         return [
-          { label: 'PAC', value: 82 },
-          { label: 'SHO', value: 58 },
-          { label: 'PAS', value: 76 },
-          { label: 'DRI', value: 74 },
-          { label: 'DEF', value: 91 },
-          { label: 'PHY', value: 89 },
+          { label: 'PAC', value: clamp(80) },
+          { label: 'SHO', value: clamp(56) },
+          { label: 'PAS', value: clamp(74) },
+          { label: 'DRI', value: clamp(72) },
+          { label: 'DEF', value: clamp(90) },
+          { label: 'PHY', value: clamp(88) },
         ];
       case 'GOALKEEPER':
         return [
-          { label: 'DIV', value: 88 },
-          { label: 'HAN', value: 86 },
-          { label: 'KIC', value: 80 },
-          { label: 'REF', value: 92 },
-          { label: 'SPD', value: 55 },
-          { label: 'POS', value: 89 },
+          { label: 'DIV', value: clamp(87) },
+          { label: 'HAN', value: clamp(85) },
+          { label: 'KIC', value: clamp(78) },
+          { label: 'REF', value: clamp(91) },
+          { label: 'SPD', value: clamp(54) },
+          { label: 'POS', value: clamp(88) },
         ];
       default:
         return [
-          { label: 'PAC', value: 85 },
-          { label: 'SHO', value: 80 },
-          { label: 'PAS', value: 82 },
-          { label: 'DRI', value: 84 },
-          { label: 'DEF', value: 78 },
-          { label: 'PHY', value: 82 },
+          { label: 'PAC', value: clamp(84) },
+          { label: 'SHO', value: clamp(78) },
+          { label: 'PAS', value: clamp(80) },
+          { label: 'DRI', value: clamp(82) },
+          { label: 'DEF', value: clamp(76) },
+          { label: 'PHY', value: clamp(80) },
         ];
     }
   };
@@ -114,8 +130,8 @@ export const FUTPlayerCard: React.FC<FUTPlayerCardProps> = ({
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    const rotX = ((y - centerY) / centerY) * -12;
-    const rotY = ((x - centerX) / centerX) * 12;
+    const rotX = ((y - centerY) / centerY) * -14;
+    const rotY = ((x - centerX) / centerX) * 14;
 
     setRotateX(rotX);
     setRotateY(rotY);
@@ -136,18 +152,22 @@ export const FUTPlayerCard: React.FC<FUTPlayerCardProps> = ({
     stage: 'w-[340px] md:w-[380px] h-[520px] md:h-[570px] text-base',
   }[size];
 
-  // Foil styling
-  const cardFoilClass = isPlatinum
-    ? 'platinum-foil-bg border-purple-400/60 neon-glow-platinum'
+  // Dynamic Tier Themes: ACE / GOLD / SILVER
+  const cardFoilClass = isAce
+    ? 'ace-foil-bg border-purple-400/80 neon-glow-ace ring-1 ring-cyan-400/40'
     : isGold
-    ? 'gold-foil-bg border-amber-400/60 neon-glow-gold'
-    : 'silver-foil-bg border-slate-300/50';
+    ? 'gold-foil-bg border-amber-400/80 neon-glow-gold'
+    : 'silver-foil-bg border-slate-300/70 neon-glow-silver';
 
-  const tierBadgeColor = isPlatinum
-    ? 'bg-purple-950/80 text-purple-200 border-purple-400/50'
+  const tierBadgeColor = isAce
+    ? 'bg-purple-950/90 text-cyan-300 border-cyan-400/60 shadow-lg shadow-purple-500/30'
     : isGold
-    ? 'bg-amber-950/80 text-amber-200 border-amber-400/50'
-    : 'bg-slate-900/80 text-slate-200 border-slate-400/50';
+    ? 'bg-amber-950/90 text-amber-200 border-amber-400/60 shadow-lg shadow-amber-500/30'
+    : 'bg-slate-900/90 text-slate-200 border-slate-400/60 shadow-lg shadow-slate-500/20';
+
+  const tierLabel = isAce ? 'ACE' : isGold ? 'GOLD' : 'SILVER';
+
+  const basePrice = isAce ? 5000 : isGold ? 3000 : 1000;
 
   return (
     <div className={`fut-card-wrapper inline-block ${className}`}>
@@ -159,12 +179,12 @@ export const FUTPlayerCard: React.FC<FUTPlayerCardProps> = ({
           transform: interactive ? `rotateX(${rotateX}deg) rotateY(${rotateY}deg)` : undefined,
         }}
         className={`fut-card relative rounded-3xl border-2 p-1 overflow-hidden shadow-2xl transition-all duration-200 select-none ${sizeClasses} ${cardFoilClass} ${
-          isLivePodium ? 'animated-border-glow ring-4 ring-purple-500/40' : ''
+          isLivePodium ? 'animated-border-glow ring-4 ring-purple-500/50' : ''
         }`}
       >
         {/* Holographic Dynamic Sheen Layer */}
         <div
-          className="absolute inset-0 holographic-sheen pointer-events-none opacity-40 mix-blend-overlay z-20"
+          className="absolute inset-0 holographic-sheen pointer-events-none opacity-45 mix-blend-overlay z-20"
           style={
             glarePosition
               ? {
@@ -182,15 +202,15 @@ export const FUTPlayerCard: React.FC<FUTPlayerCardProps> = ({
             {/* OVR + Position Badge */}
             <div className="flex flex-col items-center">
               <span className={`font-black tracking-tighter leading-none ${size === 'sm' ? 'text-3xl' : size === 'stage' ? 'text-5xl' : 'text-4xl'} ${
-                isPlatinum ? 'text-purple-300' : isGold ? 'text-amber-300' : 'text-slate-200'
+                isAce ? 'text-cyan-300 drop-shadow-[0_0_12px_rgba(6,182,212,0.8)]' : isGold ? 'text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.8)]' : 'text-slate-200'
               }`}>
                 {overallRating}
               </span>
-              <span className={`font-extrabold tracking-wider uppercase mt-1 ${size === 'sm' ? 'text-xs' : 'text-sm'} text-white`}>
+              <span className={`font-black tracking-wider uppercase mt-1 ${size === 'sm' ? 'text-xs' : 'text-sm'} text-white`}>
                 {primaryPos}
               </span>
               {secondaryPos && (
-                <span className="text-[9px] px-1 py-0.2 rounded bg-white/10 text-slate-300 font-mono mt-0.5">
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-slate-300 font-mono mt-0.5 border border-white/10">
                   {secondaryPos}
                 </span>
               )}
@@ -198,8 +218,9 @@ export const FUTPlayerCard: React.FC<FUTPlayerCardProps> = ({
 
             {/* Tier & Live Badges */}
             <div className="flex flex-col items-end gap-1">
-              <span className={`text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full border shadow-sm ${tierBadgeColor}`}>
-                {isPlatinum ? 'PLATINUM' : isGold ? 'GOLD PRO' : 'SILVER'}
+              <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border shadow-md flex items-center gap-1 ${tierBadgeColor}`}>
+                {isAce ? <Crown className="w-3 h-3 text-cyan-300" /> : <Sparkles className="w-3 h-3 text-amber-300" />}
+                {tierLabel}
               </span>
 
               {isLivePodium && (
@@ -218,9 +239,11 @@ export const FUTPlayerCard: React.FC<FUTPlayerCardProps> = ({
 
           {/* Middle Section: Player Photo Avatar */}
           <div className="relative flex-1 flex items-center justify-center my-2">
-            <div className="absolute inset-0 bg-radial from-purple-500/20 via-transparent to-transparent rounded-full filter blur-xl" />
+            <div className={`absolute inset-0 rounded-full filter blur-xl ${
+              isAce ? 'bg-purple-500/30' : isGold ? 'bg-amber-500/30' : 'bg-slate-500/20'
+            }`} />
             
-            <div className={`relative rounded-2xl overflow-hidden border-2 border-white/15 bg-gradient-to-b from-slate-800/80 to-slate-950 flex items-center justify-center shadow-xl ${
+            <div className={`relative rounded-2xl overflow-hidden border-2 border-white/20 bg-gradient-to-b from-slate-800/90 to-slate-950 flex items-center justify-center shadow-2xl ${
               size === 'sm' ? 'w-24 h-24' : size === 'stage' ? 'w-44 h-44' : 'w-32 h-32'
             }`}>
               {photo ? (
@@ -262,7 +285,7 @@ export const FUTPlayerCard: React.FC<FUTPlayerCardProps> = ({
                     {st.label}
                   </span>
                   <span className={`font-mono font-extrabold ${size === 'sm' ? 'text-[11px]' : 'text-xs'} ${
-                    st.value >= 90 ? 'text-amber-300' : st.value >= 80 ? 'text-purple-300' : 'text-slate-200'
+                    st.value >= 88 ? 'text-cyan-300' : st.value >= 75 ? 'text-amber-300' : 'text-slate-200'
                   }`}>
                     {st.value}
                   </span>
@@ -271,13 +294,13 @@ export const FUTPlayerCard: React.FC<FUTPlayerCardProps> = ({
             </div>
 
             {/* Valuation / Current Bid Banner */}
-            <div className="rounded-xl bg-slate-900/90 border border-white/10 px-3 py-1.5 flex items-center justify-between">
+            <div className="rounded-xl bg-slate-900/90 border border-white/10 px-3 py-1.5 flex items-center justify-between shadow-inner">
               <div className="text-left">
                 <span className="text-[9px] uppercase font-bold text-slate-400 block leading-tight">
                   {currentBid ? 'Current Bid' : player.isSold ? 'Sold Price' : 'Base Price'}
                 </span>
                 <span className={`font-black font-mono leading-none ${size === 'sm' ? 'text-xs' : 'text-sm'} text-emerald-400`}>
-                  ${(currentBid || player.finalAuctionPrice || basePrice).toLocaleString()}
+                  ${(currentBid || player.finalAuctionPrice || player.category?.basePrice || basePrice).toLocaleString()}
                 </span>
               </div>
 
@@ -288,9 +311,11 @@ export const FUTPlayerCard: React.FC<FUTPlayerCardProps> = ({
                 </div>
               ) : (
                 <div className="text-right">
-                  <span className="text-[9px] uppercase font-semibold text-slate-500 block">Status</span>
-                  <span className="text-[10px] font-bold text-purple-300 uppercase">
-                    {player.isSold ? 'SOLD' : 'AVAILABLE'}
+                  <span className="text-[9px] uppercase font-semibold text-slate-500 block">Tier</span>
+                  <span className={`text-[10px] font-black uppercase font-mono ${
+                    isAce ? 'text-cyan-300' : isGold ? 'text-amber-300' : 'text-slate-300'
+                  }`}>
+                    {tierLabel}
                   </span>
                 </div>
               )}

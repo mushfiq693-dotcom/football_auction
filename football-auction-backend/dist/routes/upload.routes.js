@@ -11,7 +11,7 @@ const errorHandler_middleware_1 = require("../middlewares/errorHandler.middlewar
 const router = (0, express_1.Router)();
 const upload = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(),
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
     fileFilter: (_req, file, cb) => {
         if (file.mimetype.startsWith('image/')) {
             cb(null, true);

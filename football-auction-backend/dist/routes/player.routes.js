@@ -28,12 +28,19 @@ const verifyPlayerSchema = zod_1.z.object({
         rejectionReason: zod_1.z.string().optional(),
     }),
 });
+const setRatingSchema = zod_1.z.object({
+    body: zod_1.z.object({
+        rating: zod_1.z.number().min(1).max(99),
+    }),
+});
 // Player fetches their own profile
 router.get('/me', auth_middleware_1.authenticate, player_controller_1.PlayerController.getMyProfile);
 // Player creates/updates profile
 router.post('/register', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.PLAYER, client_1.Role.SUPER_ADMIN), (0, validate_middleware_1.validate)(registerPlayerSchema), player_controller_1.PlayerController.register);
 // Get player roster
 router.get('/', player_controller_1.PlayerController.getPlayers);
+// Podium Admin / Super Admin sets rating & tier
+router.patch('/:id/rating', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), (0, validate_middleware_1.validate)(setRatingSchema), player_controller_1.PlayerController.setRating);
 // Admin approves or rejects player profile
 router.patch('/:id/verify', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), (0, validate_middleware_1.validate)(verifyPlayerSchema), player_controller_1.PlayerController.verifyPlayer);
 exports.default = router;

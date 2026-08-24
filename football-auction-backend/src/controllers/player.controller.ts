@@ -30,6 +30,21 @@ export class PlayerController {
     }
   }
 
+  static async setRating(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const { rating } = req.body;
+      const player = await PlayerService.setPlayerRating(id, Number(rating));
+      res.status(200).json({
+        success: true,
+        message: `Player rating set to ${rating} (${player.category?.name || 'Tier'})`,
+        data: player,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async getPlayers(req: Request, res: Response, next: NextFunction) {
     try {
       const seasonId = req.query.seasonId as string | undefined;

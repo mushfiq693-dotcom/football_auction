@@ -76,6 +76,7 @@ class PlayerService {
                 position: dto.position,
                 secondaryPosition: secPos,
                 jerseyNumber: jNum,
+                rating: 80,
                 registrationStatus: client_1.RegistrationStatus.PENDING,
             },
             include: {
@@ -98,6 +99,54 @@ class PlayerService {
             },
         });
         return player;
+    }
+    static async setPlayerRating(playerId, rating) {
+        const player = await database_1.prisma.player.findUnique({
+            where: { id: playerId },
+        });
+        if (!player) {
+            throw new errorHandler_middleware_1.AppError(404, 'Player not found');
+        }
+        const clampedRating = Math.max(1, Math.min(99, Math.round(rating)));
+        // Categorization logic:
+        // Rating >= 88: ACE (Base Price: $5000, Increment: $500)
+        // Rating >= 75: GOLD (Base Price: $3000, Increment: $300)
+        // Rating < 75: SILVER (Base Price: $1000, Increment: $100)
+        const tierName = clampedRating >= 88 ? 'ACE' : clampedRating >= 75 ? 'GOLD' : 'SILVER';
+        const basePrice = clampedRating >= 88 ? 5000 : clampedRating >= 75 ? 3000 : 1000;
+        const minBidIncrement = clampedRating >= 88 ? 500 : clampedRating >= 75 ? 300 : 100;
+        // Find or create category for this season
+        let category = await database_1.prisma.playerCategory.findFirst({
+            where: {
+                seasonId: player.seasonId,
+                name: { contains: tierName, mode: 'insensitive' },
+            },
+        });
+        if (!category) {
+            category = await database_1.prisma.playerCategory.create({
+                data: {
+                    seasonId: player.seasonId,
+                    name: `${tierName} Tier`,
+                    basePrice,
+                    minBidIncrement,
+                    maxPlayersPerTeam: 15,
+                },
+            });
+        }
+        const updated = await database_1.prisma.player.update({
+            where: { id: playerId },
+            data: {
+                rating: clampedRating,
+                categoryId: category.id,
+                registrationStatus: client_1.RegistrationStatus.APPROVED,
+            },
+            include: {
+                user: { select: { fullName: true, email: true, avatarUrl: true } },
+                category: true,
+                team: { select: { id: true, name: true, code: true, logoUrl: true } },
+            },
+        });
+        return updated;
     }
     static async getPlayers(filters) {
         const where = { deletedAt: null };
