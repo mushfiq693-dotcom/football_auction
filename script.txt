@@ -1,154 +1,82 @@
 ================================================================================
-   GSTU PREMIER LEAGUE (GPL) — OFFICIAL JUDGES EVALUATION SCRIPT
-   Designed specifically for the 7 Hackathon Evaluation Criteria
+   GSTU PREMIER LEAGUE (GPL) — COMPACT JUDGES EVALUATION SCRIPT
    Platform: https://football-auction-drab.vercel.app | Slides: /presentation
 ================================================================================
 
-[0:00 - 0:20] — OPENING & HOOK
+[INTRO]
+• "Honorable Judges, welcome to GSTU Premier League (GPL)."
+• "We built an end-to-end, real-time sports auction and championship platform 
+  powered by WebSockets, PostgreSQL, and FIFA-style 3D FUT Cards."
+
 --------------------------------------------------------------------------------
-"Respected Judges, welcome to GSTU Premier League (GPL). 
+1. AUTHENTICATION & PERSONAL DASHBOARDS
+--------------------------------------------------------------------------------
+• Security: JWT (HS256) digital signatures + Bcrypt 10-round salted password hashing.
+• 4 Strict Personas: Super Admin, Podium Admin, Team Manager, and League Player.
+• Player Dashboard: Select exact primary/secondary positions, upload profile photo 
+  with instant client-side canvas compression, and track approval.
+• Team Manager Dashboard: Real-time financial purse, spent budget, and remaining squad tracker.
 
-University sports tournaments are often ruined by manual paper bidding mistakes, 
-teams overspending their budgets, and boring spreadsheets. We engineered GPL 
-as an end-to-end, sub-millisecond real-time auction and football championship 
-ecosystem. 
+--------------------------------------------------------------------------------
+2. SUPER ADMIN PANEL (TOURNAMENT SETUP)
+--------------------------------------------------------------------------------
+• 4-Phase Lifecycle Engine: Controls global state (Phase 1: Setup → Phase 2: Registration 
+  → Phase 3: Live Auction → Phase 4: Tournament).
+• Rules & Tiers: Configures starting purse (৳50,000), squad limits (7-11), and Tier Base 
+  Prices (ACE: ৳5k, GOLD: ৳3k, SILVER: ৳1.5k).
+• Franchise & Rating Calibration: Creates franchise teams and assigns player FUT ratings (1-99 OVR).
+• 3-Level Nuke Protocols: Password-guarded Level 1 (Tournament Wipe), Level 2 (Roster Wipe 
+  + Cloudinary cleanup), and Level 3 (Factory Reset).
 
-Let us walk you through each of the 7 core evaluation criteria."
+--------------------------------------------------------------------------------
+3. PODIUM ADMIN (THE AUCTIONEER CONSOLE)
+--------------------------------------------------------------------------------
+• Live Lot Control: Pulls players from 'Unsold Pool' onto the live stage.
+• Bidding Modes: Toggles between Open Bidding and Blind (Sealed Envelope) Mode with 1 click.
+• Lot Timer: 15-second lot countdown with automatic +5s anti-snipe extension per bid.
+• Stage Overrides: Live dispute resolution (Pause stage, Rollback bids, Adjust timer/base price) 
+  and Hammer Finalization.
 
+--------------------------------------------------------------------------------
+4. TEAM MANAGER PANEL (THE BIDDING UI)
+--------------------------------------------------------------------------------
+• Real-Time WebSockets: Sub-millisecond live bid synchronization across all devices.
+• Dynamic Raise Tiers: Auto-scales bid increment based on purse percentage (<5%=0.25%, 
+  5-20%=0.5%, 20-50%=1.0%, >50%=2.0%).
+• Anti-Overdraft Budget Sentinel: Mathematically blocks any bid if:
+  [Remaining Balance - Bid < Remaining Squad Slots × Lowest Base Price].
+• Blind Mode: Submits encrypted digital envelopes evaluated at T=0.
 
-================================================================================
-CRITERION 1: AUTHENTICATION & PERSONAL DASHBOARDS
-================================================================================
-"Starting with Point 1: Authentication & Personal Dashboards.
+--------------------------------------------------------------------------------
+5. SPECTATOR EXPERIENCE (THE LIVE VIEW)
+--------------------------------------------------------------------------------
+• 3D Holographic FUT Cards: Hardware-accelerated mouse-tilt, light sheen, and glowing tier halos.
+• Framer Motion 3D Modal: Clicking any card opens a 6-attribute radar breakdown 
+  (Pace, Shooting, Passing, Dribbling, Defending, Physicality).
+• Broadcast Atmosphere: Live audio gavels, celebratory confetti explosions, and live ledger ticker.
 
-• Security Architecture: We implemented a secure Role-Based Access Control 
-  (RBAC) system powered by JWT (HS256) digital signatures and Bcrypt 10-round 
-  salted password hashing.
-• 4 Strict Personas: 
-  1. Super Admin (Event Manager)
-  2. Podium Admin (The Auctioneer)
-  3. Team Manager (Franchise Owner)
-  4. League Player (Athlete)
-• Tailored Dashboards: 
-  - When an athlete logs in, they access the Player Portal to select exact 
-    primary and secondary positions, upload profile media with instant Base64 
-    canvas compression, and track their verification status.
-  - Team Managers get a dedicated financial command center displaying their 
-    allocated purse, spent funds, and remaining squad quota."
+--------------------------------------------------------------------------------
+6. MATCH CENTER & TOURNAMENT TRACKING
+--------------------------------------------------------------------------------
+• 2-Legged Fixtures: Generates balanced Home/Away round-robin fixtures with aggregate scores.
+• Automated Points Table: Live calculations for P, W (3 pts), D (1 pt), L (0 pts), GF, GA, 
+  and GD tiebreakers with podium medal badges.
+• 4 Core Football Metrics: Golden Boot (Goals), Playmaker (Assists), Golden Glove (Clean Sheets), 
+  and Discipline Cards Leaderboard.
+• News Portal: Integrated press releases and matchday media reports.
 
+--------------------------------------------------------------------------------
+7. CORE UI RESILIENCY (THE CHAOS TESTS)
+--------------------------------------------------------------------------------
+• Missing Image Resilience: Automatic glowing athletic monogram fallback (zero broken cards).
+• Huge File Protection: 50MB backend payload support + client canvas compression 
+  (shrinks 15MB photos to 100KB in 50ms).
+• Network Recovery: Automatic WebSocket reconnection without losing stage state.
+• Database Concurrency: Prisma atomic transaction locks prevent double-spending & race conditions.
 
-================================================================================
-CRITERION 2: SUPER ADMIN PANEL (TOURNAMENT SETUP)
-================================================================================
-"Moving to Point 2: Super Admin Panel & Tournament Setup.
-
-The Super Admin is the sovereign controller of the entire platform:
-
-• 4-Phase State Engine: Super Admin toggles the season through 4 distinct global 
-  phases: Phase 1 (Setup), Phase 2 (Player Registration), Phase 3 (Live Auction), 
-  and Phase 4 (Live Tournament).
-• Financial & Squad Rules: In Phase 1, the admin configures total team purse 
-  (৳50,000), squad limits (Min 7, Max 11), and Tier Base Prices (ACE: ৳5k, 
-  GOLD: ৳3k, SILVER: ৳1.5k).
-• Franchise Management: Super Admin creates franchise teams, assigns team owners, 
-  and calibrates player FUT Ratings (1-99 OVR) into dynamic tiers.
-• 3-Level Nuke Reset Protocols: 
-  - Level 1: Wipes tournament fixtures and reverts to Live Auction.
-  - Level 2: Wipes rosters, teams, and Cloudinary photos while retaining rules.
-  - Level 3: Factory Reset dropping all data with Super Admin password authentication."
-
-
-================================================================================
-CRITERION 3: PODIUM ADMIN (THE AUCTIONEER CONSOLE)
-================================================================================
-"Next is Point 3: Podium Admin & The Auctioneer Console.
-
-During Phase 3, the Podium Admin takes center stage at the live auction podium:
-
-• Live Lot Management: The auctioneer pulls athletes from the 'Unsold Pool' 
-  onto the live podium stage.
-• Bidding Modes: With a single click, the auctioneer can switch between 
-  Normal Open Bidding and Blind Sealed-Envelope Mode.
-• Live Stage Timer: Operates a 15-second lot timer with automated Anti-Snipe 
-  protection (+5s extension per bid).
-• Dynamic Overrides: If an offline dispute arises, the Podium Admin can pause 
-  the stage, rollback fraudulent bids, or adjust base prices on the fly before 
-  dropping the final hammer."
-
-
-================================================================================
-CRITERION 4: TEAM MANAGER PANEL (THE BIDDING UI)
-================================================================================
-"Now, Point 4: Team Manager Panel & The Bidding UI.
-
-• Sub-Millisecond WebSocket Bidding: Team Managers place live bids synchronized 
-  instantaneously across all devices via Socket.IO.
-• Dynamic Percentage-Based Raises: Bidding increments automatically scale as a 
-  percentage of total team purse (< 5% purse = 0.25%, 5-20% = 0.5%, 20-50% = 1.0%, 
-  > 50% = 2.0%).
-• Anti-Chaos Budget Sentinel: The backend mathematically guarantees that no team 
-  can ever overdraft. It enforces:
-  [Remaining Balance - Bid >= Remaining Required Slots × Lowest Base Price]. 
-  If a bid violates squad completion, it is blocked at the database transaction level!
-• Blind Bidding: In Blind Mode, managers submit hidden envelope bids evaluated at T=0."
-
-
-================================================================================
-CRITERION 5: SPECTATOR EXPERIENCE (THE LIVE VIEW)
-================================================================================
-"For Point 5: Spectator Experience & Live View.
-
-• 3D Holographic FUT Cards: Players are rendered as interactive FUT cards with 
-  hardware-accelerated 3D tilt, light sheen, and glowing tier halos.
-• Framer Motion 3D Modal: Clicking any player card springs open a high-definition 
-  dossier with animated skill bars across 6 attributes: Pace, Shooting, Passing, 
-  Dribbling, Defending, and Physicality.
-• Broadcast Visuals: Spectators enjoy live audio gavels, celebratory confetti 
-  explosions on hammer drop, and real-time transaction ticker feeds."
-
-
-================================================================================
-CRITERION 6: MATCH CENTER & TOURNAMENT TRACKING
-================================================================================
-"Turning to Point 6: Match Center & Tournament Tracking.
-
-When the auction finishes, the system transitions into Phase 4:
-
-• 2-Legged Fixture Generator: Automatically generates balanced Home and Away 
-  fixtures with aggregate score tracking (Leg 1, Leg 2, Aggregate).
-• Automated Points Table: Instantly recalculates Won (3 pts), Drawn (1 pt), Lost 
-  (0 pts), Goal Difference (GD), and Goals For (GF) tiebreakers with gold/silver/bronze 
-  podium badges.
-• 4 Core Football Metrics:
-  1. Golden Boot (Top Scorers)
-  2. Playmaker (Top Assists)
-  3. Golden Glove (Clean Sheets for GK & Defenders)
-  4. Discipline Leaderboard (Yellow & Red Cards)
-• Tournament Press: Integrated official news portal for matchday reports."
-
-
-================================================================================
-CRITERION 7: CORE UI RESILIENCY (THE CHAOS TESTS)
-================================================================================
-"Finally, Point 7: Core UI Resiliency & Chaos Testing.
-
-We engineered GPL to withstand real-world chaos:
-
-• Broken Image Resilience: If an athlete has no photo or cloud network fails, 
-  our system automatically renders an athletic monogram with glowing tier lights. 
-  No card ever renders broken!
-• Large File Protection: Handled via 50MB backend payload support + smart client-side 
-  HTML5 canvas compression that shrinks heavy 15MB camera photos down to 100KB in 50ms.
-• Network Disconnect Recovery: Automatic WebSocket reconnection without losing 
-  the active stage state.
-• Database Concurrency: Prisma atomic transaction locks prevent race conditions 
-  when multiple teams bid at the exact same millisecond."
-
-
+--------------------------------------------------------------------------------
 [CONCLUSION]
 --------------------------------------------------------------------------------
-"In summary, GPL is built with React 19, TypeScript, PostgreSQL, Prisma, and 
-Socket.IO, fully responsive across mobile and desktop. 
-
-Thank you, honorable judges. We are ready for your questions and live tests!"
+• "GPL is completely responsive, battle-tested, and ready for multi-sport scalability."
+• "Thank you, respected judges! We are ready for your live questions."
 ================================================================================
