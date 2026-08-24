@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGlobalPhase } from '../contexts/GlobalStateContext';
 import { api } from '../services/api';
@@ -16,15 +16,20 @@ import {
   CheckCheck,
   ExternalLink,
   Shield,
+  Menu,
+  X,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const { activePhase } = useGlobalPhase();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Super Admin Notifications State
   const [notificationsOpen, setNotificationsOpen] = useState<boolean>(false);
@@ -51,7 +56,13 @@ export const Navbar: React.FC = () => {
     return () => clearInterval(interval);
   }, [user]);
 
-  // Close dropdowns on outside click
+  // Close menus on outside click or route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setDropdownOpen(false);
+    setNotificationsOpen(false);
+  }, [location.pathname]);
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -59,6 +70,9 @@ export const Navbar: React.FC = () => {
       }
       if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
         setNotificationsOpen(false);
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -108,43 +122,59 @@ export const Navbar: React.FC = () => {
     }
   };
 
+  const isActiveRoute = (path: string) => location.pathname === path;
+
   return (
-    <nav className="glass-card sticky top-0 z-50 border-b border-slate-800 backdrop-blur-xl bg-slate-950/85">
+    <nav className="glass-card sticky top-0 z-50 border-b border-slate-800 backdrop-blur-xl bg-slate-950/90 shadow-2xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4 w-full">
         {/* Left: Brand Logo */}
         <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-105 transition-transform flex-shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-105 transition-transform flex-shrink-0">
             <Trophy className="w-5 h-5 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
               <span className="font-black text-base sm:text-lg text-white tracking-tight">GSTU</span>
-              <span className="font-extrabold text-base sm:text-lg bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              <span className="font-black text-base sm:text-lg bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">
                 PREMIER LEAGUE
               </span>
               <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-purple-950/90 border border-purple-500/50 text-purple-300 ml-0.5">
                 GPL
               </span>
             </div>
-            <span className="text-[10px] font-bold text-slate-400 block -mt-1 tracking-wider uppercase">
+            <span className="text-[10px] font-semibold text-slate-400 block -mt-1 tracking-wider uppercase">
               FUT Arena Live • Auction & Fixtures
             </span>
           </div>
         </Link>
 
-        {/* Center: Dynamic Clean Nav Links */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
-          <Link to="/roster" className="hover:text-purple-400 transition-colors">
+        {/* Center / Navigation Links (Desktop) */}
+        <div className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-300">
+          <Link
+            to="/roster"
+            className={`px-3 py-1.5 rounded-xl transition-all ${
+              isActiveRoute('/roster')
+                ? 'text-white bg-purple-600/20 border border-purple-500/40 shadow-sm'
+                : 'text-slate-300 hover:text-white hover:bg-slate-900/60'
+            }`}
+          >
             Players
           </Link>
-          <Link to="/tournament" className="hover:text-purple-400 transition-colors">
+          <Link
+            to="/tournament"
+            className={`px-3 py-1.5 rounded-xl transition-all ${
+              isActiveRoute('/tournament')
+                ? 'text-white bg-purple-600/20 border border-purple-500/40 shadow-sm'
+                : 'text-slate-300 hover:text-white hover:bg-slate-900/60'
+            }`}
+          >
             Tournament & News
           </Link>
 
           {activePhase === 'PLAYER_REGISTRATION' && (
             <Link
               to="/player/dashboard"
-              className="text-emerald-400 hover:underline flex items-center gap-1 text-xs"
+              className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30"
             >
               <Sparkles className="w-3.5 h-3.5" />
               Player Profile & Card
@@ -152,12 +182,16 @@ export const Navbar: React.FC = () => {
           )}
         </div>
 
-        {/* Right Header Actions */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+        {/* Right Header Action Group */}
+        <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
           {/* Prominent Live Auction Room Button */}
           <Link
             to="/auction"
-            className="btn-shine btn-primary-purple flex items-center gap-2 px-4 py-2 rounded-2xl text-white font-black text-xs uppercase tracking-wider transition-all cursor-pointer group hover:-translate-y-0.5 active:scale-95"
+            className={`btn-shine flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2 rounded-2xl text-white font-black text-xs uppercase tracking-wider transition-all cursor-pointer group shadow-lg ${
+              isActiveRoute('/auction')
+                ? 'bg-gradient-to-r from-pink-600 to-purple-600 shadow-pink-600/40 ring-2 ring-purple-400'
+                : 'btn-primary-purple'
+            }`}
           >
             <Radio className="w-3.5 h-3.5 text-white animate-pulse group-hover:scale-110 transition-transform" />
             <span className="hidden sm:inline">Live Auction Room</span>
@@ -183,10 +217,9 @@ export const Navbar: React.FC = () => {
                 )}
               </button>
 
-              {/* Glassmorphic Notifications Dropdown */}
+              {/* Notifications Dropdown Panel */}
               {notificationsOpen && (
                 <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-3xl glass-card border border-purple-500/40 shadow-2xl p-4 z-50 animate-fade-in space-y-3">
-                  {/* Header */}
                   <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                     <div className="flex items-center gap-2">
                       <Bell className="w-4 h-4 text-purple-400" />
@@ -211,7 +244,6 @@ export const Navbar: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Notifications List */}
                   <div className="max-h-[320px] overflow-y-auto space-y-2 pr-1">
                     {notifications.length > 0 ? (
                       notifications.map((n, idx) => (
@@ -244,7 +276,6 @@ export const Navbar: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Admin Console Shortcut */}
                   {(user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') && (
                     <div className="pt-2 border-t border-slate-800">
                       <Link
@@ -262,13 +293,12 @@ export const Navbar: React.FC = () => {
             </div>
           )}
 
-          {/* User Session Actions with Interactive Dropdown */}
+          {/* User Profile Pill / Auth Actions */}
           {user ? (
             <div className="relative" ref={dropdownRef}>
-              {/* Clickable Profile Pill */}
               <button
                 onClick={() => setDropdownOpen((prev) => !prev)}
-                className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-2xl bg-slate-900/90 border border-slate-700 hover:border-purple-500/50 transition-all cursor-pointer group shadow-lg"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-900/90 border border-slate-700 hover:border-purple-500/50 transition-all cursor-pointer group shadow-lg"
               >
                 <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
                   {user.avatarUrl ? (
@@ -277,19 +307,18 @@ export const Navbar: React.FC = () => {
                     user.fullName?.charAt(0).toUpperCase() || 'U'
                   )}
                 </div>
-                <span className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors max-w-[100px] truncate hidden sm:inline">
+                <span className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors max-w-[90px] truncate hidden md:inline">
                   {user.fullName}
                 </span>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold border ${getRoleBadgeStyle(user.role)}`}>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold border ${getRoleBadgeStyle(user.role)} hidden sm:inline`}>
                   {user.role}
                 </span>
                 <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180 text-purple-400' : ''}`} />
               </button>
 
-              {/* Glassmorphism Profile Dropdown Menu */}
+              {/* Profile Dropdown Menu */}
               {dropdownOpen && (
                 <div className="absolute right-0 mt-3 w-72 rounded-3xl glass-card border border-purple-500/30 shadow-2xl p-2 z-50 animate-fade-in divide-y divide-slate-800">
-                  {/* User Info Header */}
                   <div className="p-3">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white font-extrabold text-sm shadow-md">
@@ -308,7 +337,6 @@ export const Navbar: React.FC = () => {
 
                   {/* Dedicated Role Dashboards */}
                   <div className="py-2 space-y-1">
-                    {/* Player Dedicated Dashboard */}
                     {user.role === 'PLAYER' && (
                       <Link
                         to="/player/dashboard"
@@ -318,12 +346,11 @@ export const Navbar: React.FC = () => {
                         <Sparkles className="w-4 h-4 text-emerald-400" />
                         <div>
                           <span>My Player Hub & FUT Card</span>
-                          <span className="text-[10px] block text-slate-400 font-normal">Edit profile & live card preview</span>
+                          <span className="text-[10px] block text-slate-400 font-normal">Edit profile & live card</span>
                         </div>
                       </Link>
                     )}
 
-                    {/* Team Owner Dedicated Dashboard */}
                     {user.role === 'TEAM_OWNER' && (
                       <Link
                         to="/team/dashboard"
@@ -333,12 +360,11 @@ export const Navbar: React.FC = () => {
                         <Wallet className="w-4 h-4 text-amber-400" />
                         <div>
                           <span>Franchise Management</span>
-                          <span className="text-[10px] block text-slate-400 font-normal">Manage purse & acquired squad</span>
+                          <span className="text-[10px] block text-slate-400 font-normal">Manage purse & squad</span>
                         </div>
                       </Link>
                     )}
 
-                    {/* Admin Dedicated Panel */}
                     {(user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') && (
                       <Link
                         to="/admin"
@@ -348,12 +374,11 @@ export const Navbar: React.FC = () => {
                         <Settings className="w-4 h-4 text-purple-400" />
                         <div>
                           <span>Super Admin Console</span>
-                          <span className="text-[10px] block text-slate-400 font-normal">Rules, teams, phases & nuke resets</span>
+                          <span className="text-[10px] block text-slate-400 font-normal">Rules, teams, phases & nukes</span>
                         </div>
                       </Link>
                     )}
 
-                    {/* Podium Admin Quick Link */}
                     {(user.role === 'SUPER_ADMIN' || user.role === 'ADMIN' || user.role === 'PODIUM_ADMIN') && (
                       <Link
                         to="/auction"
@@ -408,21 +433,65 @@ export const Navbar: React.FC = () => {
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Link
                 to="/login"
-                className="px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white transition-colors"
+                className="px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white transition-colors"
               >
                 Login
               </Link>
               <Link
                 to="/register"
-                className="px-4 py-2 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-500 rounded-xl shadow-lg shadow-purple-600/30 transition-all"
+                className="px-3.5 py-2 text-xs font-black text-white bg-purple-600 hover:bg-purple-500 rounded-xl shadow-lg shadow-purple-600/30 transition-all"
               >
                 Sign Up
               </Link>
             </div>
           )}
+
+          {/* Mobile Hamburger Toggle (Visible on < lg screens) */}
+          <div className="lg:hidden" ref={mobileMenuRef}>
+            <button
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white cursor-pointer"
+              title="Toggle Navigation Menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+
+            {/* Mobile Drawer Dropdown */}
+            {mobileMenuOpen && (
+              <div className="absolute left-4 right-4 top-16 rounded-3xl glass-card border border-purple-500/40 p-4 shadow-2xl z-50 space-y-3 animate-fade-in">
+                <div className="flex flex-col space-y-2 text-sm font-semibold">
+                  <Link
+                    to="/roster"
+                    className="p-3 rounded-xl hover:bg-purple-600/20 text-slate-200 hover:text-white flex items-center gap-2.5"
+                  >
+                    <Users className="w-4 h-4 text-purple-400" />
+                    <span>Players & Roster</span>
+                  </Link>
+
+                  <Link
+                    to="/tournament"
+                    className="p-3 rounded-xl hover:bg-purple-600/20 text-slate-200 hover:text-white flex items-center gap-2.5"
+                  >
+                    <Trophy className="w-4 h-4 text-amber-400" />
+                    <span>Tournament & Match Center</span>
+                  </Link>
+
+                  {activePhase === 'PLAYER_REGISTRATION' && (
+                    <Link
+                      to="/player/dashboard"
+                      className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 flex items-center gap-2.5"
+                    >
+                      <Sparkles className="w-4 h-4 text-emerald-400" />
+                      <span>Player Profile & 3D FUT Card</span>
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </nav>
