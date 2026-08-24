@@ -7,7 +7,7 @@
   },
   "scripts": {
     "build": "cd football-auction-backend && npm install && npx prisma generate && npm run build",
-    "start": "cd football-auction-backend && npx prisma db push && npm start",
+    "start": "cd football-auction-backend && npx prisma db push --accept-data-loss && npm start",
     "dev:backend": "cd football-auction-backend && npm run dev",
     "dev:frontend": "cd football-auction-frontend && npm run dev",
     "build:frontend": "cd football-auction-frontend && npm install && npm run build",

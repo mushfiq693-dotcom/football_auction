@@ -7,9 +7,9 @@
     "dev": "tsx watch src/server.ts",
     "postinstall": "prisma generate",
     "build": "prisma generate && tsc",
-    "start": "prisma db push && node dist/server.js",
+    "start": "prisma db push --accept-data-loss && node dist/server.js",
     "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push",
+    "prisma:push": "prisma db push --accept-data-loss",
     "prisma:migrate": "prisma migrate dev"
   },
   "keywords": [],
