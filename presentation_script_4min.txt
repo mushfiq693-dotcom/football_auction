@@ -1,0 +1,88 @@
+================================================================================
+   GSTU PREMIER LEAGUE (GPL) — 4-MINUTE JUDGES PRESENTATION SCRIPT
+   Platform: https://football-auction-drab.vercel.app
+   Interactive Slides: /presentation
+================================================================================
+
+[0:00 - 0:30] — INTRODUCTION & THE PROBLEM (30 Seconds)
+--------------------------------------------------------------------------------
+"Honorable Judges, welcome to GSTU Premier League (GPL). 
+
+Every university and sports club faces chaos during player auctions: manual paper 
+mistakes, teams overspending their budget, and zero live engagement for fans. 
+
+We engineered GPL as a complete, real-time sports auction and championship 
+ecosystem that brings the magic of FIFA Ultimate Team directly to university 
+athletes with sub-millisecond real-time sync and zero financial error."
+
+
+[0:30 - 1:15] — 4-PHASE LIFECYCLE STATE ENGINE (45 Seconds)
+--------------------------------------------------------------------------------
+"Our entire platform is governed by an automated 4-Phase State Machine:
+
+• Phase 1 (Setup): Super Admin configures starting budgets (৳50,000), minimum 
+  squad limits, and tier price floors.
+• Phase 2 (Player Registration): Athletes register, choose primary/secondary 
+  positions, upload photos, and get official ratings.
+• Phase 3 (Live Auction): Bidding opens in real time on the live stage with 
+  anti-chaos budget sentinels.
+• Phase 4 (Live Tournament): The drafted squads seamlessly transition into 
+  live championship fixtures with automated points tables."
+
+
+[1:15 - 2:00] — 3D HOLOGRAPHIC FUT CARDS (45 Seconds)
+--------------------------------------------------------------------------------
+"Our flagship innovation is the 3D Holographic FUT Card System:
+
+• Cards feature hardware-accelerated 3D perspective tilt and light sheen as 
+  the cursor moves.
+• Tiers shine dynamically: ACE Tier (88+ OVR) in platinum-cyan foil, GOLD Tier 
+  in golden foil, and SILVER Tier in metallic slate.
+• Clicking any card springs open a high-definition Framer Motion inspection 
+  modal showing a full 6-attribute breakdown: Pace, Shooting, Passing, Dribbling, 
+  Defending, and Physicality.
+• If an athlete has no image, our system automatically renders an athletic monogram 
+  with glowing tier lights, so cards never break."
+
+
+[2:00 - 2:50] — LIVE REAL-TIME AUCTION ENGINE (50 Seconds)
+--------------------------------------------------------------------------------
+"The core of our platform is the Real-Time Bidding Arena powered by WebSockets:
+
+• 15-Second Anti-Snipe Lot Timer: Every new bid adds +5 seconds, ensuring fair 
+  bidding wars.
+• Anti-Overdraft Budget Sentinel: Before accepting any bid, our backend transaction 
+  lock mathematically verifies that the team has enough money left to buy their 
+  remaining mandatory squad slots at the lowest base price. Teams can never overdraft!
+• Blind Auction Mode: For tiebreakers or marquee players, teams can submit sealed 
+  bids in digital envelopes opened at T=0.
+• Live Streaming Ledger: Fans and judges watch live audio feedback, hammer drops, 
+  and celebratory confetti in real time."
+
+
+[2:50 - 3:35] — AUTOMATED TOURNAMENT & MATCH CENTER (45 Seconds)
+--------------------------------------------------------------------------------
+"Unlike ordinary auction tools that stop when bidding ends, GPL transitions 
+directly into Phase 4 — The Championship League:
+
+• Automated Fixtures: Super Admin generates balanced Home and Away 2-legged fixtures.
+• Live Points Table: Live scores immediately recalculate Points (3 for Win, 1 for Draw), 
+  Goal Difference, and Goals For tiebreakers.
+• 4 Core Football Metrics: Automatically tracks individual player statistics for:
+  1. Golden Boot (Top Scorers)
+  2. Playmaker (Top Assists)
+  3. Golden Glove (Clean Sheets)
+  4. Discipline Leaderboard (Yellow and Red Cards)"
+
+
+[3:35 - 4:00] — 3-LEVEL RESET (NUKE) & CONCLUSION (25 Seconds)
+--------------------------------------------------------------------------------
+"To prepare the platform for the next season, the Super Admin possesses 3 Nuke 
+Protocols: Level 1 for Tournament Wipe, Level 2 for Roster Wipe with Cloudinary 
+media cleanup, and Level 3 for Factory Reset.
+
+GPL is built with React 19, TypeScript, PostgreSQL, Prisma, and Socket.IO, fully 
+responsive on mobile, and extensible to Cricket, Basketball, or Esports.
+
+Thank you, respected judges. We are now open for your questions!"
+================================================================================
