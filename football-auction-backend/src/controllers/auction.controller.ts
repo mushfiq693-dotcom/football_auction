@@ -264,4 +264,42 @@ export class AuctionController {
       next(error);
     }
   }
+
+  static async overrideSession(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const { timerSeconds, currentBid } = req.body;
+
+      const updateData: any = {};
+      if (timerSeconds !== undefined && !isNaN(Number(timerSeconds))) {
+        updateData.timerSeconds = Number(timerSeconds);
+      }
+      if (currentBid !== undefined && !isNaN(Number(currentBid))) {
+        updateData.currentBid = Number(currentBid);
+      }
+
+      const session = await prisma.auctionSession.update({
+        where: { id },
+        data: updateData,
+        include: {
+          player: { include: { user: true, category: true } },
+          bids: { include: { team: true }, orderBy: { createdAt: 'desc' } },
+          season: true,
+        },
+      });
+
+      const io = req.app.get('io');
+      if (io) {
+        io.to('room:auction').emit('auction:state_change', session);
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Auction on-the-fly override applied successfully',
+        data: session,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

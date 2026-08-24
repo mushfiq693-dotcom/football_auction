@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSocket } from '../contexts/SocketContext';
 import { useAuth } from '../contexts/AuthContext';
-import type { AuctionBid, AuctionSession, Player } from '../types';
+import type { AuctionBid, AuctionSession, Player, Team } from '../types';
 import { FUTPlayerCard } from '../components/FUTPlayerCard';
 import confetti from 'canvas-confetti';
 import {
@@ -21,6 +21,9 @@ import {
   DollarSign,
   Crown,
   Lock,
+  Sliders,
+  Users,
+  X,
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -40,6 +43,15 @@ export const LiveAuctionPage: React.FC = () => {
   const [revealedWinner, setRevealedWinner] = useState<any | null>(null);
   const [launchingLot, setLaunchingLot] = useState<boolean>(false);
   const [placingBid, setPlacingBid] = useState<boolean>(false);
+
+  // Competitor Rosters & Budgets Overlay
+  const [allTeams, setAllTeams] = useState<Team[]>([]);
+  const [showTeamsOverlay, setShowTeamsOverlay] = useState<boolean>(false);
+
+  // Dynamic Overrides State
+  const [overrideTimerInput, setOverrideTimerInput] = useState<string>('');
+  const [overridePriceInput, setOverridePriceInput] = useState<string>('');
+  const [showOverrideModal, setShowOverrideModal] = useState<boolean>(false);
 
   const isAuctioneer = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN';
 
@@ -67,9 +79,19 @@ export const LiveAuctionPage: React.FC = () => {
     }
   };
 
+  const fetchTeams = async () => {
+    try {
+      const res = await api.get('/teams');
+      setAllTeams(res.data.data || []);
+    } catch (err) {
+      console.error('Failed to fetch teams:', err);
+    }
+  };
+
   useEffect(() => {
     fetchActiveSession();
     fetchUnsoldPool();
+    fetchTeams();
 
     if (!socket) return;
 
@@ -82,6 +104,7 @@ export const LiveAuctionPage: React.FC = () => {
       setRevealedWinner(null);
       setBidSuccess(`🎉 New top bid: $${data.bid.amount.toLocaleString()} by ${data.bid.team?.name || 'Franchise'}`);
       setTimeout(() => setBidSuccess(null), 3000);
+      fetchTeams();
     });
 
     socket.on('auction:state_change', (session: AuctionSession) => {
@@ -89,6 +112,7 @@ export const LiveAuctionPage: React.FC = () => {
       setTimer(session.timerSeconds || 30);
       setRevealedWinner(null);
       setBids(session.bids || []);
+      fetchTeams();
     });
 
     socket.on('auction:sold', (data: any) => {
@@ -98,6 +122,7 @@ export const LiveAuctionPage: React.FC = () => {
       }
       fetchActiveSession();
       fetchUnsoldPool();
+      fetchTeams();
     });
 
     socket.on('auction:rollback', (session: AuctionSession) => {
@@ -200,6 +225,36 @@ export const LiveAuctionPage: React.FC = () => {
     }
   };
 
+  const handleQuickAddTimer = async (secondsToAdd: number) => {
+    if (!activeSession) return;
+    try {
+      await api.patch(`/auction/session/${activeSession.id}/override`, {
+        timerSeconds: timer + secondsToAdd,
+      });
+      setTimer((prev) => prev + secondsToAdd);
+    } catch (err: any) {
+      setBidError(err.response?.data?.message || 'Failed to adjust timer');
+    }
+  };
+
+  const handleApplyOverride = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeSession) return;
+    try {
+      const payload: any = {};
+      if (overrideTimerInput) payload.timerSeconds = parseInt(overrideTimerInput, 10);
+      if (overridePriceInput) payload.currentBid = parseFloat(overridePriceInput);
+
+      await api.patch(`/auction/session/${activeSession.id}/override`, payload);
+      setShowOverrideModal(false);
+      setOverrideTimerInput('');
+      setOverridePriceInput('');
+      fetchActiveSession();
+    } catch (err: any) {
+      setBidError(err.response?.data?.message || 'Failed to apply dispute override');
+    }
+  };
+
   const handleLaunchPlayerSession = async (playerId: string, auctionType: 'NORMAL' | 'BLIND') => {
     try {
       setLaunchingLot(true);
@@ -237,7 +292,7 @@ export const LiveAuctionPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto py-8 px-6 space-y-6">
-      {/* Podium Auctioneer Override Banner (Podium Admins & Super Admins) */}
+      {/* Podium Auctioneer Control Banner (Admins & Super Admins) */}
       {isAuctioneer && (
         <div className="glass-card p-5 rounded-3xl border border-purple-500/40 neon-glow flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -249,7 +304,7 @@ export const LiveAuctionPage: React.FC = () => {
                 Podium Stage Control (Phase 3)
               </span>
               <span className="text-sm font-black text-white">
-                Live Lot Orchestrator & Hammer Authority
+                Live Lot Orchestrator & Dispute Authority
               </span>
             </div>
           </div>
@@ -262,11 +317,27 @@ export const LiveAuctionPage: React.FC = () => {
               }}
               className="px-4 py-2 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs shadow-lg shadow-purple-600/30 transition-all flex items-center gap-1.5 cursor-pointer"
             >
-              <UserPlus className="w-4 h-4" /> Select Next Player Lot ({unsoldPool.length} Pool)
+              <UserPlus className="w-4 h-4" /> Select Player Lot ({unsoldPool.length})
             </button>
 
             {activeSession && (
               <>
+                <button
+                  onClick={() => setShowOverrideModal(true)}
+                  className="px-3.5 py-2 rounded-2xl bg-slate-800 hover:bg-purple-900/50 border border-purple-500/40 text-purple-300 hover:text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                  title="Dynamic Floor Overrides"
+                >
+                  <Sliders className="w-4 h-4" /> Overrides
+                </button>
+
+                <button
+                  onClick={() => handleQuickAddTimer(15)}
+                  className="px-3 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs border border-slate-700 transition-all cursor-pointer"
+                  title="Add +15s to Clock"
+                >
+                  +15s
+                </button>
+
                 <button
                   onClick={handleTogglePause}
                   className={`px-4 py-2 rounded-2xl font-black text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
@@ -282,14 +353,14 @@ export const LiveAuctionPage: React.FC = () => {
                   onClick={handleRollback}
                   className="px-4 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer"
                 >
-                  <RotateCcw className="w-4 h-4 text-amber-400" /> Rollback Top Bid
+                  <RotateCcw className="w-4 h-4 text-amber-400" /> Rollback
                 </button>
 
                 <button
                   onClick={handleFinalize}
                   className="px-5 py-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
-                  <CheckCircle className="w-4 h-4" /> Finalize / Hammer Knock
+                  <CheckCircle className="w-4 h-4" /> Finalize / Knock Down
                 </button>
               </>
             )}
@@ -316,12 +387,23 @@ export const LiveAuctionPage: React.FC = () => {
                 </span>
               </div>
 
-              {/* 30-Second Circular Clock */}
-              <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-2xl bg-slate-900/90 border border-slate-800 text-slate-300 font-mono shadow-inner">
-                <Clock className={`w-5 h-5 ${timer <= 5 ? 'text-red-400 animate-spin' : 'text-amber-400'}`} />
-                <span className={`font-black ${timer <= 5 ? 'text-red-400 animate-pulse text-lg' : 'text-amber-400 text-base'}`}>
-                  00:{timer < 10 ? `0${timer}` : timer}
-                </span>
+              <div className="flex items-center gap-3">
+                {/* Competitor Rosters Drawer Toggle */}
+                <button
+                  onClick={() => setShowTeamsOverlay((prev) => !prev)}
+                  className="px-3.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-purple-500/40 text-slate-300 hover:text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Users className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Franchise Rosters ({allTeams.length})</span>
+                </button>
+
+                {/* 30-Second Countdown Clock */}
+                <div className="flex items-center gap-2.5 px-5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-slate-300 font-mono shadow-inner">
+                  <Clock className={`w-5 h-5 ${timer <= 5 ? 'text-red-400 animate-spin' : 'text-amber-400'}`} />
+                  <span className={`font-black ${timer <= 5 ? 'text-red-400 animate-pulse text-lg' : 'text-amber-400 text-base'}`}>
+                    00:{timer < 10 ? `0${timer}` : timer}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -383,7 +465,7 @@ export const LiveAuctionPage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              /* Idle State - Waiting for Stage Manager */
+              /* Idle State */
               <div className="py-24 text-center space-y-5">
                 <div className="w-20 h-20 rounded-3xl bg-purple-600/10 border border-purple-500/30 flex items-center justify-center mx-auto text-purple-400 shadow-xl shadow-purple-600/10">
                   <Zap className="w-10 h-10 animate-pulse" />
@@ -434,7 +516,7 @@ export const LiveAuctionPage: React.FC = () => {
                       <Lock className="w-3.5 h-3.5 text-amber-400" /> Sealed Envelope Rule
                     </span>
                     <p className="text-[11px] text-amber-200/80 leading-relaxed">
-                      Enter your maximum confidential bid. Amounts remain hidden until the clock expires!
+                      Enter your confidential bid. Amounts remain hidden until the clock expires!
                     </p>
                   </div>
 
@@ -459,7 +541,6 @@ export const LiveAuctionPage: React.FC = () => {
               ) : (
                 /* Open Dynamic Increments Bidding */
                 <div className="space-y-4">
-                  {/* Dynamic Increment Pills */}
                   <div className="grid grid-cols-3 gap-2">
                     {dynamicIncrements.map((inc, i) => {
                       const amount = (activeSession.currentBid || activeSession.player?.category?.basePrice || 1000) + inc;
@@ -481,7 +562,6 @@ export const LiveAuctionPage: React.FC = () => {
                     })}
                   </div>
 
-                  {/* Custom Bid Input */}
                   <div className="space-y-2 pt-1">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                       Or Custom Exact Bid:
@@ -551,10 +631,145 @@ export const LiveAuctionPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Side-by-Side Competitor Rosters & Budgets Modal/Drawer */}
+      {showTeamsOverlay && (
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-6 animate-fade-in">
+          <div className="glass-card max-w-3xl w-full p-8 rounded-3xl border border-purple-500/50 shadow-2xl max-h-[85vh] flex flex-col relative">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+              <div>
+                <h3 className="text-xl font-black text-white flex items-center gap-2">
+                  <Users className="w-5 h-5 text-purple-400" />
+                  <span>Competitor Franchise Rosters & Wallets</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Live budget balances and acquired squad progress across all teams.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowTeamsOverlay(false)}
+                className="p-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white border border-slate-800 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+              {allTeams.length > 0 ? (
+                allTeams.map((t) => {
+                  const budget = t.wallet?.currentBalance ?? (100000 - (t.wallet?.spentAmount || 0));
+                  const spent = t.wallet?.spentAmount ?? 0;
+                  const bought = t.wallet?.playersBoughtCount ?? (t.players?.length || 0);
+
+                  return (
+                    <div
+                      key={t.id}
+                      className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-purple-950/80 border border-purple-500/40 flex items-center justify-center font-mono font-black text-purple-300 text-sm">
+                          {t.code}
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-black text-white">{t.name}</h4>
+                          <span className="text-xs text-slate-400 font-mono">
+                            Manager: {t.owner?.fullName || 'Assigned Owner'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-6 font-mono text-xs">
+                        <div>
+                          <span className="text-[10px] text-slate-500 uppercase block">Purse Left</span>
+                          <span className="text-sm font-black text-emerald-400">${budget.toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-500 uppercase block">Spent</span>
+                          <span className="text-sm font-black text-amber-400">${spent.toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-500 uppercase block">Squad</span>
+                          <span className="text-sm font-black text-white">{bought} / 11</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="py-12 text-center text-slate-500 text-sm">No franchise teams registered yet.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Podium Admin Dynamic Overrides Modal */}
+      {showOverrideModal && activeSession && (
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-6 animate-fade-in">
+          <div className="glass-card max-w-md w-full p-8 rounded-3xl border border-purple-500/50 space-y-6 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <h3 className="text-lg font-black text-white flex items-center gap-2">
+                <Sliders className="w-5 h-5 text-purple-400" />
+                <span>On-the-Fly Floor Overrides</span>
+              </h3>
+              <button
+                onClick={() => setShowOverrideModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleApplyOverride} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+                  Adjust Countdown Timer (Seconds)
+                </label>
+                <input
+                  type="number"
+                  placeholder={`Current: ${timer}s`}
+                  value={overrideTimerInput}
+                  onChange={(e) => setOverrideTimerInput(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">
+                  Modify Base Valuation / Opening Price ($)
+                </label>
+                <input
+                  type="number"
+                  placeholder={`Current: $${activeSession.currentBid || activeSession.player?.category?.basePrice || 1000}`}
+                  value={overridePriceInput}
+                  onChange={(e) => setOverridePriceInput(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-emerald-400 font-mono text-sm focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowOverrideModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 cursor-pointer"
+                >
+                  Apply Overrides
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Select Player for Live Podium Modal */}
       {showPoolModal && (
-        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-6">
-          <div className="glass-card max-w-2xl w-full p-8 rounded-3xl border border-purple-500/50 shadow-2xl max-h-[85vh] flex flex-col relative animate-fade-in">
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-6 animate-fade-in">
+          <div className="glass-card max-w-2xl w-full p-8 rounded-3xl border border-purple-500/50 shadow-2xl max-h-[85vh] flex flex-col relative">
             <div className="flex flex-wrap items-center justify-between pb-4 border-b border-slate-800 mb-4 gap-3">
               <div>
                 <h3 className="text-xl font-black text-white flex items-center gap-2">
@@ -582,7 +797,7 @@ export const LiveAuctionPage: React.FC = () => {
                 placeholder="Search player in draft pool..."
                 value={poolSearch}
                 onChange={(e) => setPoolSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500 shadow-inner"
               />
             </div>
 
@@ -633,7 +848,7 @@ export const LiveAuctionPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Launch Buttons: Open Bid & Blind Bid */}
+                      {/* Launch Buttons */}
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleLaunchPlayerSession(p.id, 'NORMAL')}

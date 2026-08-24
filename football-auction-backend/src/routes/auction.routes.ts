@@ -81,4 +81,12 @@ router.post(
   AuctionController.rollback
 );
 
+// On-the-fly Dynamic Overrides (Timer / Base Price Adjustments for Live Disputes)
+router.patch(
+  '/session/:id/override',
+  authenticate,
+  roleGuard(Role.SUPER_ADMIN, Role.ADMIN),
+  AuctionController.overrideSession
+);
+
 export default router;

@@ -43,4 +43,6 @@ router.patch('/session/:id/status', auth_middleware_1.authenticate, (0, roleGuar
 router.post('/session/:id/finalize', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), auction_controller_1.AuctionController.finalizeAuction);
 // Rollback Lot
 router.post('/session/:id/rollback', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), auction_controller_1.AuctionController.rollback);
+// On-the-fly Dynamic Overrides (Timer / Base Price Adjustments for Live Disputes)
+router.patch('/session/:id/override', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), auction_controller_1.AuctionController.overrideSession);
 exports.default = router;
