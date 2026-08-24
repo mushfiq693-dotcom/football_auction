@@ -25,7 +25,7 @@ export function App() {
         <SocketProvider>
           <GlobalStateProvider>
             <BrowserRouter>
-              <div className="min-h-screen bg-slate-950 text-white flex flex-col font-sans">
+              <div className="min-h-screen text-white flex flex-col font-sans relative selection:bg-cyan-500 selection:text-slate-950">
                 <PhaseBanner />
                 <Navbar />
                 <main className="flex-1">

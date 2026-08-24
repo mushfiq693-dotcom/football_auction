@@ -125,24 +125,24 @@ export const Navbar: React.FC = () => {
   const isActiveRoute = (path: string) => location.pathname === path;
 
   return (
-    <nav className="glass-card sticky top-0 z-50 border-b border-slate-800 backdrop-blur-xl bg-slate-950/90 shadow-2xl">
+    <nav className="glass-card sticky top-0 z-50 border-b border-cyan-500/20 backdrop-blur-2xl bg-slate-950/80 shadow-2xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4 w-full">
         {/* Left: Brand Logo */}
         <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-105 transition-transform flex-shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-cyan-500/30 group-hover:scale-105 transition-transform flex-shrink-0">
             <Trophy className="w-5 h-5 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
               <span className="font-black text-base sm:text-lg text-white tracking-tight">GSTU</span>
-              <span className="font-black text-base sm:text-lg bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">
+              <span className="font-black text-base sm:text-lg bg-gradient-to-r from-white via-cyan-200 to-emerald-300 bg-clip-text text-transparent">
                 PREMIER LEAGUE
               </span>
-              <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-purple-950/90 border border-purple-500/50 text-purple-300 ml-0.5">
+              <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-cyan-950/90 border border-cyan-500/50 text-cyan-300 ml-0.5">
                 GPL
               </span>
             </div>
-            <span className="text-[10px] font-semibold text-slate-400 block -mt-1 tracking-wider uppercase">
+            <span className="text-[10px] font-semibold text-slate-300 block -mt-1 tracking-wider uppercase">
               FUT Arena Live • Auction & Fixtures
             </span>
           </div>
