@@ -53,7 +53,7 @@ export const LiveAuctionPage: React.FC = () => {
   const [overridePriceInput, setOverridePriceInput] = useState<string>('');
   const [showOverrideModal, setShowOverrideModal] = useState<boolean>(false);
 
-  const isAuctioneer = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN';
+  const isAuctioneer = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || user?.role === 'PODIUM_ADMIN';
 
   const fetchActiveSession = async () => {
     try {
