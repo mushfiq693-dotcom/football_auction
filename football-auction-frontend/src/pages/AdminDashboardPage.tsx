@@ -27,6 +27,11 @@ import {
   Play,
   Gavel,
   CheckCircle,
+  Hash,
+  DollarSign,
+  ChevronDown,
+  User as UserIcon,
+  Palette,
 } from 'lucide-react';
 
 export const AdminDashboardPage: React.FC = () => {
@@ -56,6 +61,7 @@ export const AdminDashboardPage: React.FC = () => {
   const [newTeamCode, setNewTeamCode] = useState<string>('');
   const [newTeamOwnerId, setNewTeamOwnerId] = useState<string>('');
   const [newTeamBudget, setNewTeamBudget] = useState<number>(100000);
+  const [newTeamColor, setNewTeamColor] = useState<string>('#8b5cf6');
   const [creatingTeam, setCreatingTeam] = useState<boolean>(false);
 
   // Nuke Modal State
@@ -1002,39 +1008,56 @@ export const AdminDashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* Create Team Modal */}
+      {/* Ultra-Modern Create Franchise Team Modal */}
       {showCreateTeamModal && (
-        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-6">
-          <div className="glass-card max-w-md w-full p-8 rounded-3xl border border-purple-500/50 space-y-6 shadow-2xl relative">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <Shield className="w-5 h-5 text-purple-400" />
-                Create Franchise Team
-              </h3>
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-6 animate-fade-in">
+          <div className="glass-card max-w-lg w-full p-8 md:p-10 rounded-3xl border border-purple-500/50 space-y-6 shadow-2xl relative overflow-hidden">
+            {/* Ambient Background Glow */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30 flex-shrink-0">
+                  <Shield className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-white tracking-tight">Create Franchise Team</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">Register club, purse budget & assign team manager.</p>
+                </div>
+              </div>
               <button
                 onClick={() => setShowCreateTeamModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white"
+                className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateTeam} className="space-y-4">
+            <form onSubmit={handleCreateTeam} className="space-y-5">
+              {/* Team Name */}
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Team Name</label>
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                  <Shield className="w-3.5 h-3.5 text-purple-400" />
+                  Team Name
+                </label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Dhaka Titans"
                   value={newTeamName}
                   onChange={(e) => setNewTeamName(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-purple-500"
+                  className="w-full px-4 py-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 text-white text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all placeholder:text-slate-600 shadow-inner"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* Code & Budget */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Code (2-4 chars)</label>
+                  <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                    <Hash className="w-3.5 h-3.5 text-purple-400" />
+                    Code (2-4 Chars)
+                  </label>
                   <input
                     type="text"
                     required
@@ -1042,53 +1065,123 @@ export const AdminDashboardPage: React.FC = () => {
                     placeholder="e.g. DTN"
                     value={newTeamCode}
                     onChange={(e) => setNewTeamCode(e.target.value.toUpperCase())}
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono uppercase focus:outline-none focus:border-purple-500"
+                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 text-white text-sm font-mono uppercase text-center font-black focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all placeholder:text-slate-600 shadow-inner"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Purse Budget</label>
+                  <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                    <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                    Purse Budget
+                  </label>
                   <input
                     type="number"
                     required
                     value={newTeamBudget}
                     onChange={(e) => setNewTeamBudget(Number(e.target.value))}
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono focus:outline-none focus:border-purple-500"
+                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 text-emerald-400 text-sm font-mono font-black focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all shadow-inner"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Assign Team Manager</label>
-                <select
-                  required
-                  value={newTeamOwnerId}
-                  onChange={(e) => setNewTeamOwnerId(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-purple-500"
-                >
-                  <option value="">Select an approved Team Owner</option>
-                  {teamOwners.map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.fullName} ({o.email})
-                    </option>
-                  ))}
-                </select>
+              {/* Quick Budget Presets */}
+              <div className="flex items-center gap-2 pt-0.5">
+                <span className="text-[11px] font-semibold text-slate-400">Presets:</span>
+                {[100000, 150000, 200000].map((b) => (
+                  <button
+                    key={b}
+                    type="button"
+                    onClick={() => setNewTeamBudget(b)}
+                    className={`px-3 py-1 rounded-xl text-[11px] font-bold font-mono transition-all cursor-pointer ${
+                      newTeamBudget === b
+                        ? 'bg-purple-600 text-white shadow-md shadow-purple-600/40'
+                        : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-800'
+                    }`}
+                  >
+                    ${(b / 1000).toFixed(0)}K
+                  </button>
+                ))}
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-2">
+              {/* Team Color Selector */}
+              <div>
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                  <Palette className="w-3.5 h-3.5 text-purple-400" />
+                  Franchise Color Palette
+                </label>
+                <div className="flex items-center gap-3">
+                  {[
+                    { color: '#8b5cf6', label: 'Purple' },
+                    { color: '#ef4444', label: 'Crimson' },
+                    { color: '#06b6d4', label: 'Cyan' },
+                    { color: '#10b981', label: 'Emerald' },
+                    { color: '#f59e0b', label: 'Gold' },
+                    { color: '#3b82f6', label: 'Blue' },
+                  ].map((c) => (
+                    <button
+                      key={c.color}
+                      type="button"
+                      onClick={() => setNewTeamColor(c.color)}
+                      style={{ backgroundColor: c.color }}
+                      className={`w-8 h-8 rounded-full transition-transform cursor-pointer flex items-center justify-center ${
+                        newTeamColor === c.color ? 'scale-125 ring-2 ring-white shadow-lg' : 'opacity-80 hover:opacity-100'
+                      }`}
+                      title={c.label}
+                    >
+                      {newTeamColor === c.color && <Check className="w-4 h-4 text-white stroke-[3]" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Assign Team Manager */}
+              <div>
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                  <UserIcon className="w-3.5 h-3.5 text-purple-400" />
+                  Assign Team Manager / Owner
+                </label>
+                <div className="relative">
+                  <select
+                    required
+                    value={newTeamOwnerId}
+                    onChange={(e) => setNewTeamOwnerId(e.target.value)}
+                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 text-white text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none cursor-pointer pr-10 shadow-inner"
+                  >
+                    <option value="">Select an approved Team Owner</option>
+                    {teamOwners.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.fullName} ({o.email})
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-slate-400 absolute right-4 top-4 pointer-events-none" />
+                </div>
+                {teamOwners.length === 0 && (
+                  <span className="text-[11px] text-amber-400 mt-1 block">
+                    ⚠️ No users with Team Owner role registered yet. Approve a user first or assign later.
+                  </span>
+                )}
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex items-center justify-end gap-3 pt-3">
                 <button
                   type="button"
                   onClick={() => setShowCreateTeamModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+                  className="px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold border border-slate-700 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creatingTeam}
-                  className="px-6 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-lg shadow-purple-600/30 disabled:opacity-50"
+                  className="group relative px-7 py-3.5 rounded-2xl font-black text-xs uppercase tracking-wider text-white shadow-xl transition-all cursor-pointer overflow-hidden bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 shadow-purple-600/40 disabled:opacity-50 active:scale-[0.98]"
                 >
-                  {creatingTeam ? 'Creating...' : 'Create Team'}
+                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform pointer-events-none" />
+                  <span className="relative flex items-center gap-1.5">
+                    {creatingTeam ? 'Creating Franchise...' : 'Create Franchise Team'}
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  </span>
                 </button>
               </div>
             </form>
