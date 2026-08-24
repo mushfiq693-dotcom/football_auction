@@ -152,9 +152,9 @@ export const Navbar: React.FC = () => {
         <div className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-300">
           <Link
             to="/roster"
-            className={`px-3 py-1.5 rounded-xl transition-all ${
+            className={`px-3.5 py-1.5 rounded-xl transition-all ${
               isActiveRoute('/roster')
-                ? 'text-white bg-purple-600/20 border border-purple-500/40 shadow-sm'
+                ? 'text-cyan-300 bg-cyan-950/50 border border-cyan-500/40 shadow-sm'
                 : 'text-slate-300 hover:text-white hover:bg-slate-900/60'
             }`}
           >
@@ -162,9 +162,9 @@ export const Navbar: React.FC = () => {
           </Link>
           <Link
             to="/tournament"
-            className={`px-3 py-1.5 rounded-xl transition-all ${
+            className={`px-3.5 py-1.5 rounded-xl transition-all ${
               isActiveRoute('/tournament')
-                ? 'text-white bg-purple-600/20 border border-purple-500/40 shadow-sm'
+                ? 'text-cyan-300 bg-cyan-950/50 border border-cyan-500/40 shadow-sm'
                 : 'text-slate-300 hover:text-white hover:bg-slate-900/60'
             }`}
           >
@@ -189,11 +189,11 @@ export const Navbar: React.FC = () => {
             to="/auction"
             className={`btn-shine flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2 rounded-2xl text-white font-black text-xs uppercase tracking-wider transition-all cursor-pointer group shadow-lg ${
               isActiveRoute('/auction')
-                ? 'bg-gradient-to-r from-pink-600 to-purple-600 shadow-pink-600/40 ring-2 ring-purple-400'
-                : 'btn-primary-purple'
+                ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 shadow-cyan-500/40 ring-2 ring-cyan-400 font-black'
+                : 'bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 border border-cyan-400/40 shadow-cyan-500/20'
             }`}
           >
-            <Radio className="w-3.5 h-3.5 text-white animate-pulse group-hover:scale-110 transition-transform" />
+            <Radio className="w-3.5 h-3.5 text-cyan-300 animate-pulse group-hover:scale-110 transition-transform" />
             <span className="hidden sm:inline">Live Auction Room</span>
             <span className="sm:hidden">Auction</span>
           </Link>
@@ -436,13 +436,13 @@ export const Navbar: React.FC = () => {
             <div className="flex items-center gap-2">
               <Link
                 to="/login"
-                className="px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white transition-colors"
+                className="px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-cyan-300 transition-colors"
               >
                 Login
               </Link>
               <Link
                 to="/register"
-                className="px-3.5 py-2 text-xs font-black text-white bg-purple-600 hover:bg-purple-500 rounded-xl shadow-lg shadow-purple-600/30 transition-all"
+                className="btn-shine px-4 py-2 text-xs font-black text-slate-950 bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 rounded-xl shadow-lg shadow-cyan-500/30 border border-cyan-300/40 transition-all cursor-pointer"
               >
                 Sign Up
               </Link>
