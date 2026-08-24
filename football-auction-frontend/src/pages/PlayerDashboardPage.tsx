@@ -142,9 +142,10 @@ export const PlayerDashboardPage: React.FC = () => {
   }, [user]);
 
   // Handle direct file selection
+  // Handle direct file selection with high-performance canvas compression
   const handleFileChange = (file: File) => {
     setErrorMessage(null);
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    const maxSize = 20 * 1024 * 1024; // 20MB
 
     if (!file.type.startsWith('image/')) {
       setErrorMessage('Please select a valid image file (JPG, PNG, WEBP).');
@@ -152,16 +153,47 @@ export const PlayerDashboardPage: React.FC = () => {
     }
 
     if (file.size > maxSize) {
-      setErrorMessage('File size exceeds 10MB limit. Please choose a smaller photo.');
+      setErrorMessage('File size exceeds 20MB limit. Please choose a smaller photo.');
       return;
     }
 
     setSelectedFile(file);
-    // Instant base64 preview and permanent persistent format
+
+    // Read and compress image to high-def compact data URL (max 800x800, quality 0.85)
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target?.result) {
-        setPhotoUrl(e.target.result as string);
+        const rawBase64 = e.target.result as string;
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+            setPhotoUrl(compressedBase64);
+          } else {
+            setPhotoUrl(rawBase64);
+          }
+        };
+        img.onerror = () => setPhotoUrl(rawBase64);
+        img.src = rawBase64;
       }
     };
     reader.readAsDataURL(file);

@@ -19,8 +19,8 @@ const notification_routes_1 = __importDefault(require("./routes/notification.rou
 const app = (0, express_1.default)();
 // Middlewares
 app.use((0, cors_1.default)());
-app.use(express_1.default.json());
-app.use(express_1.default.urlencoded({ extended: true }));
+app.use(express_1.default.json({ limit: '50mb' }));
+app.use(express_1.default.urlencoded({ extended: true, limit: '50mb' }));
 // Health Check
 app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });

@@ -46,11 +46,41 @@ export const RegistrationPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Instant local preview via Base64 FileReader
+    // Instant local preview & canvas compression (max 800x800, quality 0.85)
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
-        setUploadedPhotoUrl(event.target.result as string);
+        const rawBase64 = event.target.result as string;
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+            setUploadedPhotoUrl(compressedBase64);
+          } else {
+            setUploadedPhotoUrl(rawBase64);
+          }
+        };
+        img.onerror = () => setUploadedPhotoUrl(rawBase64);
+        img.src = rawBase64;
       }
     };
     reader.readAsDataURL(file);
@@ -70,7 +100,7 @@ export const RegistrationPage: React.FC = () => {
         setUploadedPublicId(res.data.data.publicId);
       }
     } catch (err: any) {
-      console.warn('Cloudinary upload warning, using persistent base64 data url:', err);
+      console.warn('Cloudinary upload fallback, using compressed base64 data url:', err);
     } finally {
       setUploadingImage(false);
     }
