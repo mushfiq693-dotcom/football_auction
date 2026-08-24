@@ -35,44 +35,44 @@ export const LandingPage: React.FC = () => {
             '🏆 TOURNAMENT LIVE! Track live match scores, dynamic points table, and golden boot stats.'}
         </p>
 
-        {/* Phase-Dynamic Public Hero CTA */}
-        <div className="flex flex-wrap items-center justify-center gap-4">
+        {/* Phase-Dynamic Public Hero CTA Buttons */}
+        <div className="flex flex-wrap items-center justify-center gap-5">
           {activePhase === 'PLAYER_REGISTRATION' && (
             <Link
               to="/register-player"
-              className="px-8 py-4 text-base font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-2xl shadow-xl shadow-emerald-600/30 transition-all flex items-center gap-2"
+              className="btn-shine px-9 py-4 text-sm md:text-base font-black text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-2xl shadow-xl shadow-emerald-600/30 border border-emerald-400/40 flex items-center gap-2.5 hover:-translate-y-0.5 transition-all"
             >
               <Users className="w-5 h-5" />
-              Register as Player Now
+              <span>Register as Player Now</span>
             </Link>
           )}
 
           {activePhase === 'LIVE_AUCTION' && (
             <Link
               to="/auction"
-              className="px-8 py-4 text-base font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 rounded-2xl shadow-2xl shadow-purple-600/40 transition-all flex items-center gap-2 animate-bounce-short"
+              className="btn-shine btn-primary-purple px-9 py-4 text-sm md:text-base font-black text-white rounded-2xl flex items-center gap-2.5 hover:-translate-y-0.5 transition-all cursor-pointer group"
             >
               <Radio className="w-5 h-5 text-white animate-pulse" />
-              Watch Live Auction Ledger (Spectator)
+              <span>Watch Live Auction Ledger (Spectator)</span>
             </Link>
           )}
 
           {activePhase === 'LIVE_TOURNAMENT' && (
             <Link
               to="/tournament"
-              className="px-8 py-4 text-base font-bold text-slate-900 bg-amber-400 hover:bg-amber-300 rounded-2xl shadow-xl shadow-amber-400/30 transition-all flex items-center gap-2"
+              className="btn-shine px-9 py-4 text-sm md:text-base font-black text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 rounded-2xl shadow-xl shadow-amber-400/30 border border-amber-300/50 flex items-center gap-2.5 hover:-translate-y-0.5 transition-all"
             >
-              <Trophy className="w-5 h-5" />
-              View Live Matches & Standings
+              <Trophy className="w-5 h-5 text-slate-950" />
+              <span>View Live Matches & Standings</span>
             </Link>
           )}
 
           <Link
             to="/roster"
-            className="px-8 py-4 text-base font-bold text-slate-200 glass-card hover:bg-slate-800 rounded-2xl border border-slate-700 transition-all flex items-center gap-2"
+            className="btn-shine btn-secondary-glass px-9 py-4 text-sm md:text-base font-bold text-slate-200 hover:text-white rounded-2xl flex items-center gap-2.5 hover:-translate-y-0.5 transition-all"
           >
-            <Eye className="w-4 h-4 text-slate-400" />
-            Explore Verified Roster
+            <Eye className="w-4 h-4 text-purple-400" />
+            <span>Explore Verified Roster</span>
           </Link>
         </div>
       </div>

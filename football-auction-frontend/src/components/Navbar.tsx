@@ -157,9 +157,9 @@ export const Navbar: React.FC = () => {
           {/* Prominent Live Auction Room Button */}
           <Link
             to="/auction"
-            className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-purple-600/30 hover:shadow-purple-600/50 transition-all cursor-pointer group active:scale-95"
+            className="btn-shine btn-primary-purple flex items-center gap-2 px-4 py-2 rounded-2xl text-white font-black text-xs uppercase tracking-wider transition-all cursor-pointer group hover:-translate-y-0.5 active:scale-95"
           >
-            <Radio className="w-3.5 h-3.5 text-white animate-pulse" />
+            <Radio className="w-3.5 h-3.5 text-white animate-pulse group-hover:scale-110 transition-transform" />
             <span className="hidden sm:inline">Live Auction Room</span>
             <span className="sm:hidden">Auction</span>
           </Link>
