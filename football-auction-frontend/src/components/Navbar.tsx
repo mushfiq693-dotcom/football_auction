@@ -133,31 +133,31 @@ export const Navbar: React.FC = () => {
 
       {/* Dynamic Nav Links */}
       <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
-        <Link to="/" className="hover:text-purple-400 transition-colors">Home</Link>
-        <Link to="/roster" className="hover:text-purple-400 transition-colors">Players</Link>
-        <Link to="/auction" className="hover:text-purple-400 transition-colors">Live Auction</Link>
-        <Link to="/tournament" className="hover:text-purple-400 transition-colors">Tournament & News</Link>
+        <Link to="/roster" className="hover:text-purple-400 transition-colors font-semibold">
+          Players
+        </Link>
+        <Link to="/tournament" className="hover:text-purple-400 transition-colors font-semibold">
+          Tournament & News
+        </Link>
 
         {activePhase === 'PLAYER_REGISTRATION' && (
-          <Link to="/player/dashboard" className="text-emerald-400 font-semibold hover:underline flex items-center gap-1">
+          <Link
+            to="/player/dashboard"
+            className="text-emerald-400 font-semibold hover:underline flex items-center gap-1 text-xs"
+          >
             <Sparkles className="w-3.5 h-3.5" />
             Player Profile & Card
           </Link>
         )}
 
-        {activePhase === 'LIVE_AUCTION' && (
-          <Link to="/auction" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600/30 border border-purple-500/50 text-purple-300 animate-pulse font-bold">
-            <Radio className="w-4 h-4 text-purple-400" />
-            Live Auction Room
-          </Link>
-        )}
-
-        {activePhase === 'LIVE_TOURNAMENT' && (
-          <Link to="/tournament" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-600/30 border border-amber-500/50 text-amber-300 font-bold">
-            <Trophy className="w-4 h-4 text-amber-400" />
-            Tournament Matches
-          </Link>
-        )}
+        {/* Prominent Live Auction Room Button - Always Available */}
+        <Link
+          to="/auction"
+          className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/50 hover:to-indigo-600/50 border border-purple-500/50 text-purple-300 hover:text-white font-bold text-xs shadow-lg shadow-purple-600/20 transition-all group cursor-pointer"
+        >
+          <Radio className="w-4 h-4 text-purple-400 animate-pulse group-hover:scale-110 transition-transform" />
+          <span>Live Auction Room</span>
+        </Link>
       </div>
 
       {/* Right Header Actions */}
