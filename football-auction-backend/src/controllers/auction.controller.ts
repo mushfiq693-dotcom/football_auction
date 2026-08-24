@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuctionEngineService } from '../services/auctionEngine.service';
 import { prisma } from '../config/database';
-import { AuctionStatus, AuctionType } from '@prisma/client';
+import { AuctionStatus, AuctionType, Phase } from '@prisma/client';
+import { AppError } from '../middlewares/errorHandler.middleware';
 
 export class AuctionController {
   static async getActiveSession(_req: Request, res: Response, next: NextFunction) {
@@ -39,12 +40,12 @@ export class AuctionController {
         basePrice
       );
 
-      // In Blind mode, mask the amounts if user is not Super Admin
+      // In Blind mode, mask amounts for public view
       let sanitizedBids = session.bids;
       if (session.auctionType === AuctionType.BLIND) {
         sanitizedBids = session.bids.map((b) => ({
           ...b,
-          amount: 0, // masked until revealed
+          amount: 0,
         })) as any;
       }
 
@@ -65,12 +66,11 @@ export class AuctionController {
     try {
       const unsoldPlayers = await prisma.player.findMany({
         where: {
-          registrationStatus: 'APPROVED',
           isSold: false,
           deletedAt: null,
         },
         include: {
-          user: { select: { fullName: true, avatarUrl: true } },
+          user: { select: { fullName: true, email: true, avatarUrl: true } },
           category: true,
         },
         orderBy: { createdAt: 'asc' },
@@ -87,18 +87,58 @@ export class AuctionController {
 
   static async createSession(req: Request, res: Response, next: NextFunction) {
     try {
-      const { seasonId, playerId, auctionType, timerSeconds } = req.body;
+      let { seasonId, playerId, auctionType, timerSeconds } = req.body;
+
+      const player = await prisma.player.findUnique({
+        where: { id: playerId },
+        include: { user: true, category: true, season: true },
+      });
+
+      if (!player) {
+        throw new AppError(404, 'Player not found');
+      }
+
+      // Auto-resolve seasonId if not a valid UUID
+      if (!seasonId || seasonId === 'default-season' || seasonId.trim() === '') {
+        seasonId = player.seasonId;
+      }
+
+      if (!seasonId) {
+        let activeSeason = await prisma.season.findFirst({ where: { isActive: true } });
+        if (!activeSeason) {
+          activeSeason = await prisma.season.findFirst({ orderBy: { createdAt: 'desc' } });
+        }
+        seasonId = activeSeason?.id;
+      }
+
+      // Clear any previous active/paused sessions
+      await prisma.auctionSession.updateMany({
+        where: {
+          status: { in: [AuctionStatus.ACTIVE, AuctionStatus.PAUSED] },
+        },
+        data: {
+          status: AuctionStatus.UNSOLD,
+        },
+      });
+
       const session = await prisma.auctionSession.create({
         data: {
-          seasonId,
+          seasonId: seasonId!,
           playerId,
           auctionType: auctionType || AuctionType.NORMAL,
           timerSeconds: timerSeconds || 30,
           status: AuctionStatus.ACTIVE,
+          currentBid: 0,
         },
         include: {
           player: { include: { user: true, category: true } },
+          season: true,
         },
+      });
+
+      // Update Global State to LIVE_AUCTION automatically
+      await prisma.globalState.updateMany({
+        data: { activePhase: Phase.LIVE_AUCTION },
       });
 
       const io = req.app.get('io');
@@ -108,7 +148,7 @@ export class AuctionController {
 
       res.status(201).json({
         success: true,
-        message: 'Auction session created successfully',
+        message: `Auction started: ${auctionType || 'NORMAL'} Mode`,
         data: session,
       });
     } catch (error) {
@@ -118,7 +158,32 @@ export class AuctionController {
 
   static async placeBid(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await AuctionEngineService.placeBid(req.body);
+      let { auctionSessionId, teamId, amount, isBlindBid } = req.body;
+
+      // Auto-resolve team if not passed directly
+      if (!teamId || teamId === 'undefined') {
+        const userTeam = await prisma.team.findFirst({
+          where: { ownerId: req.user!.userId },
+        });
+        if (userTeam) {
+          teamId = userTeam.id;
+        } else {
+          // If admin placing testing bid, pick the first available franchise
+          const firstTeam = await prisma.team.findFirst();
+          if (firstTeam) {
+            teamId = firstTeam.id;
+          } else {
+            throw new AppError(400, 'No franchise team available to place bids. Please create a team first.');
+          }
+        }
+      }
+
+      const result = await AuctionEngineService.placeBid({
+        auctionSessionId,
+        teamId,
+        amount: Number(amount),
+        isBlindBid,
+      });
 
       const io = req.app.get('io');
       if (io) {

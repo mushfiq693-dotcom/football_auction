@@ -97,6 +97,7 @@ export interface AuctionSession {
   timerSeconds: number;
   player: Player;
   dynamicIncrements?: DynamicIncrements;
+  bids?: AuctionBid[];
 }
 
 export interface AuctionBid {
