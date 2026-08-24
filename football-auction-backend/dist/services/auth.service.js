@@ -114,6 +114,32 @@ class AuthService {
             orderBy: { createdAt: 'desc' },
         });
     }
+    static async getAllUsers(roleFilter) {
+        const where = { deletedAt: null };
+        if (roleFilter) {
+            where.role = roleFilter;
+        }
+        return await database_1.prisma.user.findMany({
+            where,
+            select: {
+                id: true,
+                fullName: true,
+                email: true,
+                phone: true,
+                role: true,
+                isAdminApproved: true,
+                avatarUrl: true,
+                createdAt: true,
+                teamOwner: {
+                    select: { id: true, name: true, code: true, logoUrl: true, wallet: true },
+                },
+                playerProfile: {
+                    select: { id: true, rating: true, position: true, photoUrl: true, studentId: true, isSold: true },
+                },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
     static async verifyUser(userId, approved) {
         const user = await database_1.prisma.user.findUnique({
             where: { id: userId },

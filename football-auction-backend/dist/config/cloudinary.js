@@ -11,25 +11,36 @@ cloudinary_1.v2.config({
 });
 class CloudinaryService {
     /**
-     * Upload image buffer or base64 data to Cloudinary
+     * Upload image buffer or base64 data to Cloudinary, with direct Data URL fallback
      */
-    static async uploadImage(fileBuffer, folder = 'football_players') {
-        // If Cloudinary credentials are not configured, provide an SVG/mock fallback
-        if (!env_1.env.CLOUDINARY_CLOUD_NAME || !env_1.env.CLOUDINARY_API_KEY || env_1.env.CLOUDINARY_API_KEY === 'mock-key') {
+    static async uploadImage(fileBuffer, folder = 'football_players', mimetype = 'image/jpeg') {
+        const isMock = !env_1.env.CLOUDINARY_CLOUD_NAME ||
+            !env_1.env.CLOUDINARY_API_KEY ||
+            env_1.env.CLOUDINARY_API_KEY === 'mock-key' ||
+            env_1.env.CLOUDINARY_API_KEY === '123456789' ||
+            env_1.env.CLOUDINARY_CLOUD_NAME === 'demo';
+        // If Cloudinary credentials are not configured or demo, store directly as high-res Base64 Data URL
+        if (isMock) {
             const mockPublicId = `player_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+            const base64Data = `data:${mimetype};base64,${fileBuffer.toString('base64')}`;
             return {
-                url: `https://api.dicebear.com/7.x/bottts/svg?seed=${mockPublicId}`,
+                url: base64Data,
                 publicId: mockPublicId,
             };
         }
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             const uploadStream = cloudinary_1.v2.uploader.upload_stream({
                 folder,
                 resource_type: 'image',
-                transformation: [{ width: 500, height: 500, crop: 'limit', quality: 'auto' }],
+                transformation: [{ width: 600, height: 600, crop: 'limit', quality: 'auto' }],
             }, (error, result) => {
                 if (error || !result) {
-                    return reject(error || new Error('Cloudinary upload failed'));
+                    // Fallback cleanly to Base64 data URL so user's image is never lost
+                    const fallbackPublicId = `player_${Date.now()}`;
+                    return resolve({
+                        url: `data:${mimetype};base64,${fileBuffer.toString('base64')}`,
+                        publicId: fallbackPublicId,
+                    });
                 }
                 resolve({
                     url: result.secure_url,
@@ -43,7 +54,7 @@ class CloudinaryService {
      * Delete single asset by publicId
      */
     static async deleteAsset(publicId) {
-        if (!publicId || !env_1.env.CLOUDINARY_CLOUD_NAME || env_1.env.CLOUDINARY_API_KEY === 'mock-key') {
+        if (!publicId || !env_1.env.CLOUDINARY_CLOUD_NAME || env_1.env.CLOUDINARY_API_KEY === 'mock-key' || publicId.startsWith('player_')) {
             return true;
         }
         try {
@@ -63,7 +74,7 @@ class CloudinaryService {
             return;
         }
         try {
-            const validIds = publicIds.filter(Boolean);
+            const validIds = publicIds.filter((id) => id && !id.startsWith('player_'));
             if (validIds.length > 0) {
                 await cloudinary_1.v2.api.delete_resources(validIds);
             }

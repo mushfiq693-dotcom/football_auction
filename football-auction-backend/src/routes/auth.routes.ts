@@ -35,7 +35,8 @@ router.post('/register', validate(registerSchema), AuthController.register);
 router.post('/login', validate(loginSchema), AuthController.login);
 router.get('/me', authenticate, AuthController.me);
 
-// Super Admin User Approval Endpoints
+// Super Admin & Admin User Directory Endpoints
+router.get('/users', authenticate, roleGuard(Role.SUPER_ADMIN, Role.ADMIN), AuthController.getAllUsers);
 router.get('/pending-users', authenticate, roleGuard(Role.SUPER_ADMIN), AuthController.getPendingUsers);
 router.patch('/verify-user/:userId', authenticate, roleGuard(Role.SUPER_ADMIN), validate(verifyUserSchema), AuthController.verifyUser);
 

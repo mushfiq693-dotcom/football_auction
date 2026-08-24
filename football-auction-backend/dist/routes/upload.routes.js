@@ -26,7 +26,7 @@ router.post('/', auth_middleware_1.authenticate, upload.single('image'), async (
         if (!req.file) {
             throw new errorHandler_middleware_1.AppError(400, 'No image file provided in upload');
         }
-        const result = await cloudinary_1.CloudinaryService.uploadImage(req.file.buffer, 'player_profiles');
+        const result = await cloudinary_1.CloudinaryService.uploadImage(req.file.buffer, 'player_profiles', req.file.mimetype);
         return res.status(200).json({
             success: true,
             data: result,

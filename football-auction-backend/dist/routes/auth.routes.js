@@ -31,7 +31,8 @@ const verifyUserSchema = zod_1.z.object({
 router.post('/register', (0, validate_middleware_1.validate)(registerSchema), auth_controller_1.AuthController.register);
 router.post('/login', (0, validate_middleware_1.validate)(loginSchema), auth_controller_1.AuthController.login);
 router.get('/me', auth_middleware_1.authenticate, auth_controller_1.AuthController.me);
-// Super Admin User Approval Endpoints
+// Super Admin & Admin User Directory Endpoints
+router.get('/users', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), auth_controller_1.AuthController.getAllUsers);
 router.get('/pending-users', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN), auth_controller_1.AuthController.getPendingUsers);
 router.patch('/verify-user/:userId', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.SUPER_ADMIN), (0, validate_middleware_1.validate)(verifyUserSchema), auth_controller_1.AuthController.verifyUser);
 // Backward-compatible endpoints

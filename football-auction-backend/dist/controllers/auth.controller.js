@@ -41,6 +41,19 @@ class AuthController {
             next(error);
         }
     }
+    static async getAllUsers(req, res, next) {
+        try {
+            const roleFilter = req.query.role;
+            const users = await auth_service_1.AuthService.getAllUsers(roleFilter);
+            res.status(200).json({
+                success: true,
+                data: users,
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
     static async getPendingUsers(req, res, next) {
         try {
             const roleFilter = req.query.role;
