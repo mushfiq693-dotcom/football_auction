@@ -3,13 +3,10 @@
 
 body {
   margin: 0;
-  background-color: #02090d;
-  background-image: 
-    radial-gradient(ellipse 100% 65% at 50% -5%, rgba(56, 189, 248, 0.25) 0%, rgba(16, 185, 129, 0.18) 40%, rgba(2, 9, 13, 0.75) 85%, rgba(2, 9, 13, 0.96) 100%),
-    linear-gradient(180deg, rgba(2, 8, 12, 0.78) 0%, rgba(4, 16, 22, 0.86) 45%, rgba(2, 7, 10, 0.94) 100%),
-    url('/stadium_bg.jpg');
+  background-color: #000000;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.35)), url('/stadium_bg.jpg');
   background-attachment: fixed;
-  background-position: center top;
+  background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;
   color: #f8fafc;
@@ -17,27 +14,27 @@ body {
   overflow-x: hidden;
 }
 
-/* Stadium Floodlight Glassmorphism Primitives */
+/* Translucent Glassmorphism so total background photo shows through clearly */
 .glass-card {
-  background: rgba(6, 20, 26, 0.82);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(56, 189, 248, 0.18);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.65), 0 0 1px 1px rgba(56, 189, 248, 0.1);
+  background: rgba(3, 10, 15, 0.68);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.5);
 }
 
 .glass-pill {
-  background: rgba(56, 189, 248, 0.08);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .neon-glow {
-  box-shadow: 0 0 30px rgba(16, 185, 129, 0.4), 0 0 15px rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.45), 0 0 10px rgba(16, 185, 129, 0.35);
 }
 
 .neon-glow-accent {
-  box-shadow: 0 0 30px rgba(56, 189, 248, 0.45);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.45);
 }
 
 .neon-glow-ace {
@@ -163,14 +160,14 @@ body {
 }
 
 .btn-secondary-glass {
-  background: rgba(6, 22, 30, 0.8);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .btn-secondary-glass:hover {
-  background: rgba(8, 32, 44, 0.92);
+  background: rgba(10, 25, 35, 0.75);
   border-color: rgba(56, 189, 248, 0.6);
   box-shadow: 0 10px 28px rgba(56, 189, 248, 0.25);
 }
