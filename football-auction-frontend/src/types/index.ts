@@ -1,4 +1,4 @@
-export type Role = 'SUPER_ADMIN' | 'ADMIN' | 'TEAM_OWNER' | 'PLAYER' | 'PUBLIC_GUEST';
+export type Role = 'SUPER_ADMIN' | 'ADMIN' | 'PODIUM_ADMIN' | 'TEAM_OWNER' | 'PLAYER' | 'PUBLIC_GUEST';
 export type Phase = 'SETUP' | 'PLAYER_REGISTRATION' | 'LIVE_AUCTION' | 'LIVE_TOURNAMENT';
 export type AuctionType = 'NORMAL' | 'BLIND';
 export type AuctionStatus = 'SCHEDULED' | 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED' | 'UNSOLD';

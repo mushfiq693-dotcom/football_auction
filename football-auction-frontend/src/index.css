@@ -11,7 +11,7 @@ body {
 
 /* Glassmorphism primitives */
 .glass-card {
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(15, 23, 42, 0.8);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -25,9 +25,83 @@ body {
 }
 
 .neon-glow {
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.35);
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
 }
 
 .neon-glow-accent {
-  box-shadow: 0 0 20px rgba(34, 197, 94, 0.35);
+  box-shadow: 0 0 25px rgba(34, 197, 94, 0.4);
+}
+
+.neon-glow-gold {
+  box-shadow: 0 0 30px rgba(234, 179, 8, 0.45);
+}
+
+.neon-glow-platinum {
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+}
+
+/* 3D Holographic FUT Card Styles */
+.fut-card-wrapper {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.fut-card {
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
+  transform-style: preserve-3d;
+}
+
+.fut-card:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
+@keyframes holographicShine {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+.holographic-sheen {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.08) 25%,
+    rgba(255, 215, 0, 0.25) 45%,
+    rgba(147, 51, 234, 0.3) 55%,
+    rgba(59, 130, 246, 0.25) 70%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 300% 300%;
+  animation: holographicShine 6s ease infinite;
+}
+
+.gold-foil-bg {
+  background: radial-gradient(circle at 50% 0%, #ffe066 0%, #b8860b 40%, #593e03 85%, #1a1202 100%);
+}
+
+.platinum-foil-bg {
+  background: radial-gradient(circle at 50% 0%, #e0e7ff 0%, #818cf8 35%, #4338ca 75%, #0f172a 100%);
+}
+
+.silver-foil-bg {
+  background: radial-gradient(circle at 50% 0%, #f1f5f9 0%, #94a3b8 40%, #334155 80%, #0f172a 100%);
+}
+
+@keyframes borderGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 30px rgba(234, 179, 8, 0.7));
+  }
+}
+
+.animated-border-glow {
+  animation: borderGlow 4s ease-in-out infinite;
 }

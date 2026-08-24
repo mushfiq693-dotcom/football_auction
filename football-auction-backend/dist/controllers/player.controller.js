@@ -9,7 +9,20 @@ class PlayerController {
             const player = await player_service_1.PlayerService.registerPlayer(userId, req.body);
             res.status(201).json({
                 success: true,
-                message: 'Player profile submitted successfully',
+                message: 'Player profile saved successfully',
+                data: player,
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    static async getMyProfile(req, res, next) {
+        try {
+            const userId = req.user.userId;
+            const player = await player_service_1.PlayerService.getMyProfile(userId);
+            res.status(200).json({
+                success: true,
                 data: player,
             });
         }

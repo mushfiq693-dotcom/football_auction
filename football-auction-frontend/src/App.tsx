@@ -13,6 +13,8 @@ import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterUserPage } from './pages/RegisterUserPage';
 import { PlayerRosterPage } from './pages/PlayerRosterPage';
+import { PlayerDashboardPage } from './pages/PlayerDashboardPage';
+import { TeamDashboardPage } from './pages/TeamDashboardPage';
 
 const queryClient = new QueryClient();
 
@@ -32,6 +34,8 @@ export function App() {
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterUserPage />} />
                     <Route path="/register-player" element={<RegistrationPage />} />
+                    <Route path="/player/dashboard" element={<PlayerDashboardPage />} />
+                    <Route path="/team/dashboard" element={<TeamDashboardPage />} />
                     <Route path="/roster" element={<PlayerRosterPage />} />
                     <Route path="/auction" element={<LiveAuctionPage />} />
                     <Route path="/tournament" element={<TournamentPage />} />

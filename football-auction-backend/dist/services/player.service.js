@@ -9,17 +9,6 @@ class PlayerService {
         const existingPlayer = await database_1.prisma.player.findUnique({
             where: { userId },
         });
-        if (existingPlayer) {
-            throw new errorHandler_middleware_1.AppError(400, 'Player profile already exists for this user');
-        }
-        if (dto.studentId) {
-            const existingStudent = await database_1.prisma.player.findUnique({
-                where: { studentId: dto.studentId },
-            });
-            if (existingStudent) {
-                throw new errorHandler_middleware_1.AppError(400, 'A player with this Student ID has already registered');
-            }
-        }
         let targetSeasonId = dto.seasonId;
         if (!targetSeasonId || targetSeasonId.trim() === '') {
             let activeSeason = await database_1.prisma.season.findFirst({
@@ -43,6 +32,38 @@ class PlayerService {
         }
         const secPos = dto.secondaryPosition && dto.secondaryPosition.trim() !== '' ? dto.secondaryPosition : undefined;
         const jNum = dto.jerseyNumber && !isNaN(Number(dto.jerseyNumber)) && Number(dto.jerseyNumber) > 0 ? Number(dto.jerseyNumber) : undefined;
+        // If player already exists, update their profile
+        if (existingPlayer) {
+            return await database_1.prisma.player.update({
+                where: { id: existingPlayer.id },
+                data: {
+                    studentId: dto.studentId?.trim() || existingPlayer.studentId,
+                    academicSession: dto.academicSession?.trim() || existingPlayer.academicSession,
+                    jerseyName: dto.jerseyName?.trim() || existingPlayer.jerseyName,
+                    photoUrl: dto.photoUrl?.trim() || existingPlayer.photoUrl,
+                    photoPublicId: dto.photoPublicId?.trim() || existingPlayer.photoPublicId,
+                    position: dto.position || existingPlayer.position,
+                    secondaryPosition: secPos,
+                    jerseyNumber: jNum,
+                },
+                include: {
+                    user: {
+                        select: { fullName: true, email: true, avatarUrl: true },
+                    },
+                    category: true,
+                    team: { select: { id: true, name: true, code: true, logoUrl: true } },
+                },
+            });
+        }
+        // Check duplicate student ID for other users
+        if (dto.studentId) {
+            const existingStudent = await database_1.prisma.player.findUnique({
+                where: { studentId: dto.studentId },
+            });
+            if (existingStudent && existingStudent.userId !== userId) {
+                throw new errorHandler_middleware_1.AppError(400, 'A player with this Student ID has already registered');
+            }
+        }
         const player = await database_1.prisma.player.create({
             data: {
                 userId,
@@ -62,6 +83,18 @@ class PlayerService {
                     select: { fullName: true, email: true, avatarUrl: true },
                 },
                 category: true,
+                team: { select: { id: true, name: true, code: true, logoUrl: true } },
+            },
+        });
+        return player;
+    }
+    static async getMyProfile(userId) {
+        const player = await database_1.prisma.player.findUnique({
+            where: { userId },
+            include: {
+                user: { select: { id: true, fullName: true, email: true, avatarUrl: true } },
+                category: true,
+                team: { select: { id: true, name: true, code: true, logoUrl: true } },
             },
         });
         return player;

@@ -1,13 +1,53 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGlobalPhase } from '../contexts/GlobalStateContext';
-import { Shield, User, LogOut, Radio, Trophy } from 'lucide-react';
+import {
+  LogOut,
+  Radio,
+  Trophy,
+  ChevronDown,
+  Sparkles,
+  Wallet,
+  Settings,
+  Users,
+} from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const { activePhase } = useGlobalPhase();
   const navigate = useNavigate();
+  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const getRoleBadgeStyle = (role?: string) => {
+    switch (role) {
+      case 'SUPER_ADMIN':
+      case 'ADMIN':
+        return 'bg-purple-900/80 text-purple-300 border-purple-500/40';
+      case 'PODIUM_ADMIN':
+        return 'bg-indigo-900/80 text-indigo-300 border-indigo-500/40';
+      case 'TEAM_OWNER':
+        return 'bg-amber-900/80 text-amber-300 border-amber-500/40';
+      case 'PLAYER':
+        return 'bg-emerald-900/80 text-emerald-300 border-emerald-500/40';
+      default:
+        return 'bg-slate-800 text-slate-300 border-slate-700';
+    }
+  };
 
   return (
     <nav className="glass-card sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b border-slate-800">
@@ -28,10 +68,11 @@ export const Navbar: React.FC = () => {
         <Link to="/roster" className="hover:text-purple-400 transition-colors">Players</Link>
         <Link to="/auction" className="hover:text-purple-400 transition-colors">Live Auction</Link>
         <Link to="/tournament" className="hover:text-purple-400 transition-colors">Tournament & News</Link>
-        
+
         {activePhase === 'PLAYER_REGISTRATION' && (
-          <Link to="/register-player" className="text-emerald-400 font-semibold hover:underline">
-            Register Player
+          <Link to="/player/dashboard" className="text-emerald-400 font-semibold hover:underline flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5" />
+            Player Profile & Card
           </Link>
         )}
 
@@ -48,33 +89,153 @@ export const Navbar: React.FC = () => {
             Tournament Matches
           </Link>
         )}
-
-        {(user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN') && (
-          <Link to="/admin" className="flex items-center gap-1 text-slate-400 hover:text-white">
-            <Shield className="w-4 h-4 text-purple-400" />
-            Admin Panel
-          </Link>
-        )}
       </div>
 
-      {/* User Session Actions */}
+      {/* User Session Actions with Interactive Dropdown */}
       <div className="flex items-center gap-4">
         {user ? (
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700">
-              <User className="w-4 h-4 text-purple-400" />
-              <span className="text-xs font-semibold text-slate-200">{user.fullName}</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-900/60 text-purple-300 font-mono">
+          <div className="relative" ref={dropdownRef}>
+            {/* Clickable Profile Pill */}
+            <button
+              onClick={() => setDropdownOpen((prev) => !prev)}
+              className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-2xl bg-slate-900/90 border border-slate-700 hover:border-purple-500/50 transition-all cursor-pointer group shadow-lg"
+            >
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                {user.avatarUrl ? (
+                  <img src={user.avatarUrl} alt="" className="w-full h-full rounded-xl object-cover" />
+                ) : (
+                  user.fullName?.charAt(0).toUpperCase() || 'U'
+                )}
+              </div>
+              <span className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors">
+                {user.fullName}
+              </span>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold border ${getRoleBadgeStyle(user.role)}`}>
                 {user.role}
               </span>
-            </div>
-            <button
-              onClick={() => { logout(); navigate('/login'); }}
-              className="p-2 text-slate-400 hover:text-red-400 transition-colors"
-              title="Logout"
-            >
-              <LogOut className="w-5 h-5" />
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180 text-purple-400' : ''}`} />
             </button>
+
+            {/* Glassmorphism Profile Dropdown Menu */}
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-3 w-72 rounded-3xl glass-card border border-purple-500/30 shadow-2xl p-2 z-50 animate-fade-in divide-y divide-slate-800">
+                {/* User Info Header */}
+                <div className="p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white font-extrabold text-sm shadow-md">
+                      {user.avatarUrl ? (
+                        <img src={user.avatarUrl} alt="" className="w-full h-full rounded-2xl object-cover" />
+                      ) : (
+                        user.fullName?.charAt(0).toUpperCase() || 'U'
+                      )}
+                    </div>
+                    <div className="overflow-hidden">
+                      <h4 className="text-sm font-bold text-white truncate">{user.fullName}</h4>
+                      <p className="text-xs text-slate-400 truncate font-mono">{user.email}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dedicated Role Dashboards */}
+                <div className="py-2 space-y-1">
+                  {/* Player Dedicated Dashboard */}
+                  {user.role === 'PLAYER' && (
+                    <Link
+                      to="/player/dashboard"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition-colors"
+                    >
+                      <Sparkles className="w-4 h-4 text-emerald-400" />
+                      <div>
+                        <span>My Player Hub & FUT Card</span>
+                        <span className="text-[10px] block text-slate-400 font-normal">Edit profile & live card preview</span>
+                      </div>
+                    </Link>
+                  )}
+
+                  {/* Team Owner Dedicated Dashboard */}
+                  {user.role === 'TEAM_OWNER' && (
+                    <Link
+                      to="/team/dashboard"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition-colors"
+                    >
+                      <Wallet className="w-4 h-4 text-amber-400" />
+                      <div>
+                        <span>Franchise Management</span>
+                        <span className="text-[10px] block text-slate-400 font-normal">Manage purse & acquired squad</span>
+                      </div>
+                    </Link>
+                  )}
+
+                  {/* Admin Dedicated Panel */}
+                  {(user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold text-purple-300 hover:bg-purple-500/20 transition-colors"
+                    >
+                      <Settings className="w-4 h-4 text-purple-400" />
+                      <div>
+                        <span>Super Admin Console</span>
+                        <span className="text-[10px] block text-slate-400 font-normal">Rules, teams, phases & nuke resets</span>
+                      </div>
+                    </Link>
+                  )}
+
+                  {/* Podium Admin Quick Link */}
+                  {(user.role === 'SUPER_ADMIN' || user.role === 'ADMIN' || user.role === 'PODIUM_ADMIN') && (
+                    <Link
+                      to="/auction"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold text-indigo-300 hover:bg-indigo-500/20 transition-colors"
+                    >
+                      <Radio className="w-4 h-4 text-indigo-400" />
+                      <div>
+                        <span>Podium Auction Stage</span>
+                        <span className="text-[10px] block text-slate-400 font-normal">Stage controller & lot timer</span>
+                      </div>
+                    </Link>
+                  )}
+                </div>
+
+                {/* Quick Navigation Items */}
+                <div className="py-2 space-y-1">
+                  <Link
+                    to="/roster"
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors"
+                  >
+                    <Users className="w-4 h-4 text-slate-400" />
+                    <span>League Player Roster</span>
+                  </Link>
+
+                  <Link
+                    to="/tournament"
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors"
+                  >
+                    <Trophy className="w-4 h-4 text-slate-400" />
+                    <span>Standings & Match Center</span>
+                  </Link>
+                </div>
+
+                {/* Logout Action */}
+                <div className="pt-2">
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      logout();
+                      navigate('/login');
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-xs font-bold text-red-400 hover:bg-red-500/20 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex items-center gap-3">

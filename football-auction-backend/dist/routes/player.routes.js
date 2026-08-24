@@ -4,7 +4,6 @@ const express_1 = require("express");
 const player_controller_1 = require("../controllers/player.controller");
 const auth_middleware_1 = require("../middlewares/auth.middleware");
 const roleGuard_middleware_1 = require("../middlewares/roleGuard.middleware");
-const phaseGuard_middleware_1 = require("../middlewares/phaseGuard.middleware");
 const validate_middleware_1 = require("../middlewares/validate.middleware");
 const client_1 = require("@prisma/client");
 const zod_1 = require("zod");
@@ -29,8 +28,10 @@ const verifyPlayerSchema = zod_1.z.object({
         rejectionReason: zod_1.z.string().optional(),
     }),
 });
-// Player submits profile during Phase 2 (REGISTRATION)
-router.post('/register', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.PLAYER, client_1.Role.SUPER_ADMIN), (0, phaseGuard_middleware_1.phaseGuard)(client_1.Phase.PLAYER_REGISTRATION), (0, validate_middleware_1.validate)(registerPlayerSchema), player_controller_1.PlayerController.register);
+// Player fetches their own profile
+router.get('/me', auth_middleware_1.authenticate, player_controller_1.PlayerController.getMyProfile);
+// Player creates/updates profile
+router.post('/register', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.PLAYER, client_1.Role.SUPER_ADMIN), (0, validate_middleware_1.validate)(registerPlayerSchema), player_controller_1.PlayerController.register);
 // Get player roster
 router.get('/', player_controller_1.PlayerController.getPlayers);
 // Admin approves or rejects player profile

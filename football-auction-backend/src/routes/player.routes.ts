@@ -2,9 +2,8 @@ import { Router } from 'express';
 import { PlayerController } from '../controllers/player.controller';
 import { authenticate } from '../middlewares/auth.middleware';
 import { roleGuard } from '../middlewares/roleGuard.middleware';
-import { phaseGuard } from '../middlewares/phaseGuard.middleware';
 import { validate } from '../middlewares/validate.middleware';
-import { Role, Phase, Position, RegistrationStatus } from '@prisma/client';
+import { Role, Position, RegistrationStatus } from '@prisma/client';
 import { z } from 'zod';
 
 const router = Router();
@@ -34,12 +33,14 @@ const verifyPlayerSchema = z.object({
   }),
 });
 
-// Player submits profile during Phase 2 (REGISTRATION)
+// Player fetches their own profile
+router.get('/me', authenticate, PlayerController.getMyProfile);
+
+// Player creates/updates profile
 router.post(
   '/register',
   authenticate,
   roleGuard(Role.PLAYER, Role.SUPER_ADMIN),
-  phaseGuard(Phase.PLAYER_REGISTRATION),
   validate(registerPlayerSchema),
   PlayerController.register
 );

@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useSocket } from '../contexts/SocketContext';
 import { useAuth } from '../contexts/AuthContext';
 import type { AuctionBid, AuctionSession, Player } from '../types';
+import { FUTPlayerCard } from '../components/FUTPlayerCard';
 import confetti from 'canvas-confetti';
 import {
   Clock,
-  User,
   Zap,
   Play,
   Pause,
@@ -17,6 +17,8 @@ import {
   Shield,
   Layers,
   Award,
+  Sparkles,
+  User as UserIcon,
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -84,7 +86,7 @@ export const LiveAuctionPage: React.FC = () => {
 
     socket.on('auction:sold', (data: any) => {
       if (data.status === 'SOLD') {
-        confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+        confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
         setRevealedWinner(data);
       }
       fetchActiveSession();
@@ -118,7 +120,6 @@ export const LiveAuctionPage: React.FC = () => {
     const interval = setInterval(() => {
       setTimer((prev) => {
         if (prev <= 1) {
-          // If Auctioneer and timer reaches 0, trigger finalize
           if (isAuctioneer && activeSession.status === 'ACTIVE') {
             api.post(`/auction/session/${activeSession.id}/finalize`).catch(console.error);
           }
@@ -200,7 +201,6 @@ export const LiveAuctionPage: React.FC = () => {
     }
   };
 
-  // Dynamic Increment options
   const dynamicIncrements = activeSession?.dynamicIncrements?.suggestedIncrements || [100, 250, 500];
   const nextMinBid = activeSession?.dynamicIncrements?.nextMinimumBid || (activeSession?.currentBid ? activeSession.currentBid + 100 : 1000);
 
@@ -266,10 +266,10 @@ export const LiveAuctionPage: React.FC = () => {
         </div>
       )}
 
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left 2 Cols: Podium Stage */}
-        <div className="lg:col-span-2 space-y-6">
+      {/* Main Stage Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left 8 Cols: Podium Stage with 3D FUT Card */}
+        <div className="lg:col-span-8 space-y-6">
           <div className="glass-card p-8 rounded-3xl border border-purple-500/30 neon-glow relative overflow-hidden">
             {/* Header Status Bar */}
             <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-800">
@@ -283,7 +283,7 @@ export const LiveAuctionPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-mono text-sm">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-mono text-sm shadow-inner">
                 <Clock className="w-4 h-4 text-amber-400" />
                 <span className={`font-bold ${timer <= 5 ? 'text-red-400 animate-pulse text-base' : 'text-amber-400'}`}>
                   00:{timer < 10 ? `0${timer}` : timer}
@@ -297,57 +297,41 @@ export const LiveAuctionPage: React.FC = () => {
                 <div>
                   <h4 className="text-sm font-black">🎉 PLAYER SOLD / KNOCKED DOWN!</h4>
                   <p className="text-xs text-slate-300">
-                    Sold to winner at ${revealedWinner.winningAmount?.toLocaleString() || revealedWinner.session?.currentBid?.toLocaleString()}!
+                    Sold to winning franchise for ${revealedWinner.winningAmount?.toLocaleString() || revealedWinner.session?.currentBid?.toLocaleString()}!
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Active Player Card Details */}
+            {/* Active Player 3D FUT Card Broadcast */}
             {activeSession ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-                  <div className="w-40 h-40 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 p-1 mb-4 shadow-2xl overflow-hidden">
-                    {activeSession.player?.photoUrl ? (
-                      <img
-                        src={activeSession.player.photoUrl}
-                        alt="Player"
-                        className="w-full h-full rounded-xl object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full rounded-xl bg-slate-950 flex items-center justify-center">
-                        <User className="w-16 h-16 text-purple-300" />
-                      </div>
-                    )}
-                  </div>
-                  <h3 className="text-2xl font-black text-white text-center">
-                    {activeSession.player.user.fullName}
-                  </h3>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-purple-600/30 text-purple-300 border border-purple-500/40">
-                      {activeSession.player.position}
-                    </span>
-                    {activeSession.player.studentId && (
-                      <span className="text-xs font-mono px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
-                        {activeSession.player.studentId}
-                      </span>
-                    )}
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                {/* 3D FUT Card Broadcast Display */}
+                <div className="md:col-span-6 flex flex-col items-center justify-center">
+                  <FUTPlayerCard
+                    player={activeSession.player}
+                    size="stage"
+                    isLivePodium={true}
+                    currentBid={activeSession.currentBid}
+                    interactive={true}
+                  />
                 </div>
 
-                <div className="space-y-6 text-center md:text-left">
+                {/* Live Bidding Ticker & Controls */}
+                <div className="md:col-span-6 space-y-6 text-center md:text-left">
                   {activeSession.auctionType === 'BLIND' ? (
                     <div className="p-6 rounded-2xl bg-purple-950/40 border border-purple-500/40">
                       <EyeOff className="w-8 h-8 text-purple-400 mb-2" />
                       <h4 className="text-lg font-bold text-white">Sealed Envelope Mode</h4>
                       <p className="text-xs text-slate-400 mt-1">
-                        Bids are strictly hidden. Submit your sealed envelope. Highest bidder wins at T=0!
+                        Bids are strictly hidden from other managers. Submit your sealed envelope. Highest bidder wins at T=0!
                       </p>
                     </div>
                   ) : (
-                    <div>
-                      <span className="text-xs uppercase font-semibold text-slate-400 tracking-wider">
-                        Current Top Bid
+                    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800">
+                      <span className="text-xs uppercase font-extrabold text-slate-400 tracking-wider flex items-center gap-1.5 justify-center md:justify-start">
+                        <Sparkles className="w-4 h-4 text-purple-400" />
+                        Current Highest Bid
                       </span>
                       <div className="text-5xl font-black text-emerald-400 mt-1 font-mono tracking-tight">
                         ${activeSession.currentBid.toLocaleString()}
@@ -377,7 +361,7 @@ export const LiveAuctionPage: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Bidding Controls (Team Owners & Admins) vs Spectator Mode */}
+                  {/* Bidding Controls for Franchise Owners & Admins */}
                   {user && (user.role === 'TEAM_OWNER' || user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') ? (
                     <div className="space-y-3 pt-2">
                       {activeSession.auctionType !== 'BLIND' && (
@@ -414,10 +398,10 @@ export const LiveAuctionPage: React.FC = () => {
                     <div className="p-4 rounded-2xl bg-slate-900/90 border border-purple-500/30 text-center space-y-2">
                       <div className="inline-flex items-center gap-2 text-xs font-bold text-purple-400 uppercase tracking-wider">
                         <Zap className="w-4 h-4 text-purple-400" />
-                        <span>Public Spectator Mode</span>
+                        <span>Public Spectator Broadcast</span>
                       </div>
                       <p className="text-xs text-slate-400">
-                        You are viewing the real-time live auction stream and public ledger.
+                        Watching real-time live auction stream with holographic card broadcasting.
                       </p>
                       {!user && (
                         <a
@@ -432,10 +416,10 @@ export const LiveAuctionPage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="py-20 text-center text-slate-400">
-                <Zap className="w-12 h-12 text-slate-600 mx-auto mb-4 animate-bounce" />
-                <p className="text-lg font-semibold text-slate-300">
-                  Waiting for Podium Admin to pull the next player...
+              <div className="py-24 text-center text-slate-400 space-y-4">
+                <Zap className="w-16 h-16 text-slate-600 mx-auto animate-bounce" />
+                <p className="text-xl font-bold text-slate-300">
+                  Waiting for Podium Auctioneer to pull next player to live stage...
                 </p>
                 {isAuctioneer && (
                   <button
@@ -443,8 +427,9 @@ export const LiveAuctionPage: React.FC = () => {
                       fetchUnsoldPool();
                       setShowPoolModal(true);
                     }}
-                    className="mt-4 px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm shadow-lg shadow-purple-600/30 transition-all"
+                    className="px-6 py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-sm shadow-xl shadow-purple-600/30 transition-all inline-flex items-center gap-2"
                   >
+                    <UserPlus className="w-4 h-4" />
                     Select Player from Pool
                   </button>
                 )}
@@ -453,8 +438,8 @@ export const LiveAuctionPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right 1 Col: Live Ledger Feed */}
-        <div className="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col h-[560px]">
+        {/* Right 4 Cols: Live Ledger Feed */}
+        <div className="lg:col-span-4 glass-card p-6 rounded-3xl border border-slate-800 flex flex-col h-[640px]">
           <h3 className="text-lg font-bold text-white mb-4 flex items-center justify-between pb-3 border-b border-slate-800">
             <span className="flex items-center gap-2">
               <Layers className="w-5 h-5 text-purple-400" />
@@ -470,7 +455,7 @@ export const LiveAuctionPage: React.FC = () => {
               bids.map((b) => (
                 <div
                   key={b.id}
-                  className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between hover:border-purple-500/40 transition-colors"
+                  className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between hover:border-purple-500/40 transition-colors"
                 >
                   <div>
                     <div className="text-sm font-bold text-white">{b.team?.name || 'Franchise Team'}</div>
@@ -484,7 +469,7 @@ export const LiveAuctionPage: React.FC = () => {
                 </div>
               ))
             ) : (
-              <div className="py-16 text-center text-xs text-slate-500">
+              <div className="py-24 text-center text-xs text-slate-500">
                 No bids recorded yet in this session ledger.
               </div>
             )}
@@ -521,11 +506,11 @@ export const LiveAuctionPage: React.FC = () => {
                         {p.photoUrl ? (
                           <img src={p.photoUrl} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <User className="w-6 h-6 text-slate-400" />
+                          <UserIcon className="w-6 h-6 text-slate-400" />
                         )}
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-white">{p.user?.fullName}</h4>
+                        <h4 className="text-sm font-bold text-white">{p.jerseyName || p.user?.fullName}</h4>
                         <span className="text-[10px] font-mono text-purple-400">{p.position}</span>
                       </div>
                     </div>
