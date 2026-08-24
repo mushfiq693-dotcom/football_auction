@@ -11,7 +11,6 @@ import {
   Crown,
   Gavel,
   Shield,
-  Zap,
   Sparkles,
   ArrowRight,
 } from 'lucide-react';
@@ -64,15 +63,6 @@ export const RegisterUserPage: React.FC = () => {
       color: 'text-emerald-400',
       border: 'border-emerald-500/50',
       bg: 'bg-emerald-500/10',
-    },
-    {
-      key: 'PUBLIC_GUEST',
-      label: 'Spectator',
-      sub: 'Public Fan & Live Ledger Viewer',
-      icon: Zap,
-      color: 'text-pink-400',
-      border: 'border-pink-500/50',
-      bg: 'bg-pink-500/10',
     },
   ];
 

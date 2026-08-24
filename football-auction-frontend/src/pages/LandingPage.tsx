@@ -56,7 +56,7 @@ export const LandingPage: React.FC = () => {
               className="btn-shine btn-primary-purple px-9 py-4 text-sm md:text-base font-black text-white rounded-2xl flex items-center gap-2.5 hover:-translate-y-0.5 transition-all cursor-pointer group shadow-2xl"
             >
               <Radio className="w-5 h-5 text-white animate-pulse" />
-              <span>Watch Live Auction Ledger (Spectator)</span>
+              <span>Watch Live Auction Arena & Ledger</span>
             </Link>
           )}
 
@@ -80,7 +80,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Public Spectator Quick-Hub Cards */}
+      {/* Championship Quick-Hub Cards */}
       <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
         <Link
           to="/auction"
@@ -98,7 +98,7 @@ export const LandingPage: React.FC = () => {
             </p>
           </div>
           <div className="pt-6 flex items-center gap-2 text-xs font-black text-cyan-400 uppercase tracking-wider">
-            <span>Open Public Stage</span>
+            <span>Enter Auction Arena</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </div>
         </Link>
