@@ -12,23 +12,23 @@ export const LandingPage: React.FC = () => {
       <div className="relative overflow-hidden py-20 px-6 max-w-7xl mx-auto text-center">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/15 blur-[140px] rounded-full pointer-events-none" />
 
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-pill border border-purple-500/30 text-purple-300 text-xs font-semibold uppercase tracking-wider mb-6">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-pill border border-purple-500/30 text-purple-300 text-xs font-bold uppercase tracking-wider mb-6 shadow-lg shadow-purple-600/20">
           <Zap className="w-4 h-4 text-purple-400" />
-          University Football Franchise Platform
+          GSTU PREMIER LEAGUE (GPL) • OFFICIAL PLATFORM
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight text-white mb-6">
-          The Ultimate Football <br />
+        <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight leading-tight text-white mb-6">
+          GSTU Premier League <br />
           <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">
-            Franchise Auction & Live Tournament
+            FUT Arena Live — Cards, Bidding & Fixtures
           </span>
         </h1>
 
-        <p className="max-w-2xl mx-auto text-base md:text-lg text-slate-400 mb-10 leading-relaxed">
+        <p className="max-w-2xl mx-auto text-base md:text-lg text-slate-400 mb-10 leading-relaxed font-normal">
           {activePhase === 'SETUP' &&
-            'Season pre-configuration in progress. Franchise owners and rules setup by Super Admin.'}
+            'Season pre-configuration in progress. Franchise owners, purse budgets, and rules setup.'}
           {activePhase === 'PLAYER_REGISTRATION' &&
-            'Player registration portal is now OPEN! Submit your profile, positions, and photos.'}
+            'Player registration portal is now OPEN! Submit your profile, positions, and generate your 3D FUT Card.'}
           {activePhase === 'LIVE_AUCTION' &&
             '🔴 LIVE AUCTION IN PROGRESS! Watch the real-time franchise bidding war and live ledger.'}
           {activePhase === 'LIVE_TOURNAMENT' &&

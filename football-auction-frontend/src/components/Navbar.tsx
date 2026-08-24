@@ -52,13 +52,23 @@ export const Navbar: React.FC = () => {
   return (
     <nav className="glass-card sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b border-slate-800">
       {/* Brand Logo */}
-      <Link to="/" className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+      <Link to="/" className="flex items-center gap-3 group">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-105 transition-transform flex-shrink-0">
           <Trophy className="w-5 h-5 text-white" />
         </div>
         <div>
-          <span className="font-extrabold text-lg text-white tracking-tight">PREMIER</span>
-          <span className="font-bold text-lg text-purple-400 ml-1">AUCTION</span>
+          <div className="flex items-center gap-1.5">
+            <span className="font-black text-base sm:text-lg text-white tracking-tight">GSTU</span>
+            <span className="font-extrabold text-base sm:text-lg bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              PREMIER LEAGUE
+            </span>
+            <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-purple-950/90 border border-purple-500/50 text-purple-300 ml-0.5">
+              GPL
+            </span>
+          </div>
+          <span className="text-[10px] font-bold text-slate-400 block -mt-1 tracking-wider uppercase">
+            FUT Arena Live • Auction & Fixtures
+          </span>
         </div>
       </Link>
 
