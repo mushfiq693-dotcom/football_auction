@@ -10,13 +10,14 @@ const zod_1 = require("zod");
 const router = (0, express_1.Router)();
 const registerPlayerSchema = zod_1.z.object({
     body: zod_1.z.object({
-        seasonId: zod_1.z.string().uuid().optional().or(zod_1.z.literal('')),
-        studentId: zod_1.z.string().min(2, 'Student ID is required').optional(),
-        academicSession: zod_1.z.string().min(4, 'Academic session is required').optional(),
-        jerseyName: zod_1.z.string().min(2, 'Jersey name is required').optional(),
-        photoUrl: zod_1.z.string().url().optional().or(zod_1.z.literal('')),
+        seasonId: zod_1.z.string().optional().or(zod_1.z.literal('')),
+        studentId: zod_1.z.string().optional().or(zod_1.z.literal('')),
+        academicSession: zod_1.z.string().optional().or(zod_1.z.literal('')),
+        jerseyName: zod_1.z.string().optional().or(zod_1.z.literal('')),
+        fullName: zod_1.z.string().optional().or(zod_1.z.literal('')),
+        photoUrl: zod_1.z.string().optional().or(zod_1.z.literal('')), // Supports both Base64 Data URLs & web URLs
         photoPublicId: zod_1.z.string().optional().or(zod_1.z.literal('')),
-        position: zod_1.z.nativeEnum(client_1.Position),
+        position: zod_1.z.nativeEnum(client_1.Position).optional().default(client_1.Position.FORWARD),
         secondaryPosition: zod_1.z.nativeEnum(client_1.Position).optional().or(zod_1.z.literal('')).nullable(),
         jerseyNumber: zod_1.z.preprocess((val) => (val === '' || val === null || val === undefined || Number.isNaN(Number(val)) ? undefined : Number(val)), zod_1.z.number().int().positive().optional()),
     }),
@@ -24,8 +25,8 @@ const registerPlayerSchema = zod_1.z.object({
 const verifyPlayerSchema = zod_1.z.object({
     body: zod_1.z.object({
         status: zod_1.z.nativeEnum(client_1.RegistrationStatus),
-        categoryId: zod_1.z.string().uuid().optional(),
-        rejectionReason: zod_1.z.string().optional(),
+        categoryId: zod_1.z.string().optional().or(zod_1.z.literal('')),
+        rejectionReason: zod_1.z.string().optional().or(zod_1.z.literal('')),
     }),
 });
 const setRatingSchema = zod_1.z.object({
@@ -35,8 +36,8 @@ const setRatingSchema = zod_1.z.object({
 });
 // Player fetches their own profile
 router.get('/me', auth_middleware_1.authenticate, player_controller_1.PlayerController.getMyProfile);
-// Player creates/updates profile
-router.post('/register', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.PLAYER, client_1.Role.SUPER_ADMIN), (0, validate_middleware_1.validate)(registerPlayerSchema), player_controller_1.PlayerController.register);
+// Player creates/updates profile (accepts direct photos & data URLs)
+router.post('/register', auth_middleware_1.authenticate, (0, roleGuard_middleware_1.roleGuard)(client_1.Role.PLAYER, client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), (0, validate_middleware_1.validate)(registerPlayerSchema), player_controller_1.PlayerController.register);
 // Get player roster
 router.get('/', player_controller_1.PlayerController.getPlayers);
 // Podium Admin / Super Admin sets rating & tier

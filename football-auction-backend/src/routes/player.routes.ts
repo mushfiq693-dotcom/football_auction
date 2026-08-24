@@ -10,13 +10,14 @@ const router = Router();
 
 const registerPlayerSchema = z.object({
   body: z.object({
-    seasonId: z.string().uuid().optional().or(z.literal('')),
-    studentId: z.string().min(2, 'Student ID is required').optional(),
-    academicSession: z.string().min(4, 'Academic session is required').optional(),
-    jerseyName: z.string().min(2, 'Jersey name is required').optional(),
-    photoUrl: z.string().url().optional().or(z.literal('')),
+    seasonId: z.string().optional().or(z.literal('')),
+    studentId: z.string().optional().or(z.literal('')),
+    academicSession: z.string().optional().or(z.literal('')),
+    jerseyName: z.string().optional().or(z.literal('')),
+    fullName: z.string().optional().or(z.literal('')),
+    photoUrl: z.string().optional().or(z.literal('')), // Supports both Base64 Data URLs & web URLs
     photoPublicId: z.string().optional().or(z.literal('')),
-    position: z.nativeEnum(Position),
+    position: z.nativeEnum(Position).optional().default(Position.FORWARD),
     secondaryPosition: z.nativeEnum(Position).optional().or(z.literal('')).nullable(),
     jerseyNumber: z.preprocess(
       (val) => (val === '' || val === null || val === undefined || Number.isNaN(Number(val)) ? undefined : Number(val)),
@@ -28,8 +29,8 @@ const registerPlayerSchema = z.object({
 const verifyPlayerSchema = z.object({
   body: z.object({
     status: z.nativeEnum(RegistrationStatus),
-    categoryId: z.string().uuid().optional(),
-    rejectionReason: z.string().optional(),
+    categoryId: z.string().optional().or(z.literal('')),
+    rejectionReason: z.string().optional().or(z.literal('')),
   }),
 });
 
@@ -42,11 +43,11 @@ const setRatingSchema = z.object({
 // Player fetches their own profile
 router.get('/me', authenticate, PlayerController.getMyProfile);
 
-// Player creates/updates profile
+// Player creates/updates profile (accepts direct photos & data URLs)
 router.post(
   '/register',
   authenticate,
-  roleGuard(Role.PLAYER, Role.SUPER_ADMIN),
+  roleGuard(Role.PLAYER, Role.SUPER_ADMIN, Role.ADMIN),
   validate(registerPlayerSchema),
   PlayerController.register
 );

@@ -29,9 +29,16 @@ export function errorHandler(
   }
 
   if (err instanceof ZodError) {
+    const errorDetails = err.issues
+      .map((e: any) => {
+        const field = e.path.filter((p: any) => p !== 'body').join('.') || 'input';
+        return `${field}: ${e.message}`;
+      })
+      .join(', ');
+
     return res.status(400).json({
       success: false,
-      message: 'Validation failed',
+      message: errorDetails ? `Validation failed (${errorDetails})` : 'Validation failed',
       errors: err.issues.map((e: any) => ({
         field: e.path.join('.'),
         message: e.message,
